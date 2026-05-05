@@ -2,11 +2,92 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Desktop.App"
              xmlns:local="using:Desktop"
-             RequestedThemeVariant="Default">
-    <Application.DataTemplates>
-        <local:ViewLocator/>
-    </Application.DataTemplates>
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
+             RequestedThemeVariant="Light">
+  <Application.Styles>
+    <FluentTheme />
+    
+    <!-- Кнопки -->
+    <Style Selector="Button">
+      <Setter Property="Padding" Value="14,8"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="500"/>
+      <Setter Property="Background" Value="#E9ECEF"/>
+      <Setter Property="Foreground" Value="#344054"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#D0D5DD"/>
+    </Style>
+    <Style Selector="Button:hover">
+      <Setter Property="Background" Value="#D0D5DD"/>
+    </Style>
+    <Style Selector="Button:pressed">
+      <Setter Property="Background" Value="#B8C0CC"/>
+    </Style>
+    <Style Selector="Button.Primary">
+      <Setter Property="Background" Value="#0078D4"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderBrush" Value="#006CBE"/>
+    </Style>
+    <Style Selector="Button.Primary:hover">
+      <Setter Property="Background" Value="#106EBE"/>
+    </Style>
+    <Style Selector="Button.Danger">
+      <Setter Property="Background" Value="#D83B01"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderBrush" Value="#B22A00"/>
+    </Style>
+    <Style Selector="Button.Danger:hover">
+      <Setter Property="Background" Value="#A42B01"/>
+    </Style>
+
+    <!-- Поля ввода -->
+    <Style Selector="TextBox, ComboBox, DatePicker">
+      <Setter Property="Padding" Value="10,8"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="BorderBrush" Value="#D0D5DD"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Background" Value="#FFFFFF"/>
+    </Style>
+    <Style Selector="TextBox:disabled, ComboBox:disabled, DatePicker:disabled">
+      <Setter Property="Background" Value="#F2F4F7"/>
+      <Setter Property="Foreground" Value="#98A2B3"/>
+    </Style>
+
+    <!-- Лейблы -->
+    <Style Selector="TextBlock.Label">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Foreground" Value="#667085"/>
+      <Setter Property="Margin" Value="0,0,0,6"/>
+      <Setter Property="FontWeight" Value="500"/>
+    </Style>
+    <Style Selector="TextBlock.Header">
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="FontWeight" Value="600"/>
+      <Setter Property="Foreground" Value="#101828"/>
+      <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
+
+    <!-- Списки -->
+    <Style Selector="ListBox">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="10"/>
+      <Setter Property="Margin" Value="0,0,0,6"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="ListBoxItem:hover">
+      <Setter Property="Background" Value="#F2F4F7"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected">
+      <Setter Property="Background" Value="#E6F0FA"/>
+    </Style>
+  </Application.Styles>
+
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
 </Application>

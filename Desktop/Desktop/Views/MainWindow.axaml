@@ -1,33 +1,56 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Desktop.ViewModels"
-        xmlns:views="using:Desktop.Views"
         x:Class="Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="DNS Учёт"
-        Width="1100" Height="650"
-        WindowStartupLocation="CenterScreen">
-
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
-
-    <Grid ColumnDefinitions="200, *">
-        <!-- Side menu -->
-        <Border Grid.Column="0" Background="#F0F0F0">
-            <ListBox ItemsSource="{Binding MenuItems}"
-                     x:Name="menuList"
-                     Background="Transparent"
-                     BorderThickness="0">
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="vm:NavigationItem">
-                        <TextBlock Text="{Binding Title}" FontSize="16" Margin="10"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+        Width="1280" Height="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8F9FA">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+  <Grid ColumnDefinitions="260, *">
+    <!-- Sidebar -->
+    <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,1,0">
+      <StackPanel>
+        <Border Padding="24,20" Background="#F8FAFC" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1">
+          <TextBlock Text="DNS Учёт" FontSize="22" FontWeight="Bold" Foreground="#0078D4"/>
         </Border>
+        <ListBox ItemsSource="{Binding MenuItems}"
+                 x:Name="menuList"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Margin="12,12,12,0"
+                 SelectionMode="Single">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="vm:NavigationItem">
+              <StackPanel Orientation="Horizontal" Spacing="10" Margin="6,8">
+                <TextBlock Text="●" FontSize="8" VerticalAlignment="Center" Foreground="#0078D4"/>
+                <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="500" VerticalAlignment="Center" Foreground="#344054"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </StackPanel>
+    </Border>
 
-        <!-- Content area -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentView}" Margin="10"/>
+    <!-- Main Content -->
+    <Grid Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <!-- Header -->
+      <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="28,16">
+        <TextBlock x:Name="pageTitle" Text="Главная" FontSize="24" FontWeight="600" Foreground="#101828"/>
+      </Border>
+
+      <!-- Content -->
+      <ScrollViewer Grid.Row="1" Padding="28" VerticalScrollBarVisibility="Auto">
+        <ContentControl Content="{Binding CurrentView}"/>
+      </ScrollViewer>
     </Grid>
+  </Grid>
 </Window>

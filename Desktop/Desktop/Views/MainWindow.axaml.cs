@@ -3,7 +3,6 @@ using Avalonia.Interactivity;
 using Desktop.ViewModels;
 
 namespace Desktop.Views;
-
 public partial class MainWindow : Window
 {
     public MainWindow()
@@ -17,6 +16,7 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel vm && menuList.SelectedItem is NavigationItem navItem)
         {
             vm.NavigateCommand.Execute(navItem);
+            pageTitle.Text = navItem.Title;
         }
     }
 }

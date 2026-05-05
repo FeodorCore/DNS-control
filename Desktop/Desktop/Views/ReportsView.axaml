@@ -4,30 +4,38 @@
              x:Class="Desktop.Views.ReportsView"
              x:DataType="vm:ReportsViewModel"
              x:CompileBindings="False">
-    <Grid RowDefinitions="Auto, Auto, Auto" Margin="10">
-        <!-- Строка 0: тип отчёта -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="15" Margin="0,0,0,10">
-            <TextBlock Text="Выберите отчёт:" VerticalAlignment="Center"/>
-            <ComboBox ItemsSource="{Binding ReportTypes}"
-                      SelectedItem="{Binding SelectedReport, Mode=TwoWay}"
-                      Width="200" VerticalAlignment="Center"/>
-        </StackPanel>
+    <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
+        <StackPanel Spacing="20">
+            <TextBlock Classes="Header" Text="Формирование отчёта"/>
+      
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Classes="Label" Text="Тип отчёта"/>
+                    <ComboBox ItemsSource="{Binding ReportTypes}"
+                              SelectedItem="{Binding SelectedReport, Mode=TwoWay}"
+                              PlaceholderText="Выберите отчёт"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Classes="Label" Text="Категория"/>
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                              PlaceholderText="Все категории"/>
+                </StackPanel>
+            </Grid>
 
-        <!-- Строка 1: период и категория -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
-            <TextBlock Text="Период:" VerticalAlignment="Center"/>
-            <TextBlock Text="с" VerticalAlignment="Center"/>
-            <DatePicker SelectedDate="{Binding DateFrom}" VerticalAlignment="Center"/>
-            <TextBlock Text="по" VerticalAlignment="Center"/>
-            <DatePicker SelectedDate="{Binding DateTo}" VerticalAlignment="Center"/>
-            <TextBlock Text="Категория:" VerticalAlignment="Center" Margin="20,0,0,0"/>
-            <ComboBox ItemsSource="{Binding Categories}"
-                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
-                      Width="150" VerticalAlignment="Center"/>
-        </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Classes="Label" Text="Период:" VerticalAlignment="Center"/>
+                <TextBlock Text="с" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <DatePicker SelectedDate="{Binding DateFrom}" Width="140"/>
+                <TextBlock Text="по" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                <DatePicker SelectedDate="{Binding DateTo}" Width="140"/>
+            </StackPanel>
 
-        <!-- Строка 2: экспорт -->
-        <Button Grid.Row="2" Content="Экспорт в Excel" Command="{Binding ExportToExcelCommand}"
-                HorizontalAlignment="Right" Width="150"/>
-    </Grid>
+            <Border BorderThickness="0,1,0,0" BorderBrush="#E9ECEF" Padding="0,16,0,0" Margin="0,8,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Экспорт в Excel" Command="{Binding ExportToExcelCommand}" Classes="Primary" Width="160"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
 </UserControl>

@@ -3,86 +3,73 @@
              xmlns:vm="using:Desktop.ViewModels"
              x:Class="Desktop.Views.SuppliesView"
              x:DataType="vm:SuppliesViewModel">
-    <Grid RowDefinitions="Auto, Auto, *, Auto, Auto" Margin="10">
-        <!-- Шапка -->
-        <StackPanel Orientation="Horizontal" Spacing="15">
-            <TextBlock Text="Поставка (новая)" FontSize="16" VerticalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="Дата" VerticalAlignment="Center"/>
-                <DatePicker SelectedDate="{Binding SupplyDate, Mode=TwoWay}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="Поставщик" VerticalAlignment="Center"/>
-                <ComboBox ItemsSource="{Binding Suppliers}"
-                          SelectedValue="{Binding SupplierId, Mode=TwoWay}"
-                          DisplayMemberBinding="{Binding Name}"
-                          SelectedValueBinding="{Binding SupplierId}"
-                          Width="200"/>
-            </StackPanel>
+  <StackPanel Spacing="20">
+    <!-- Шапка поставки -->
+    <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="20">
+      <StackPanel Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+        <TextBlock Text="Поставка (новая)" FontSize="18" FontWeight="600" Foreground="#101828" VerticalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="Label" Text="Дата:" VerticalAlignment="Center" Margin="0"/>
+          <DatePicker SelectedDate="{Binding SupplyDate, Mode=TwoWay}" Width="140"/>
         </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="Label" Text="Поставщик:" VerticalAlignment="Center" Margin="0"/>
+          <ComboBox ItemsSource="{Binding Suppliers}"
+                    SelectedValue="{Binding SupplierId, Mode=TwoWay}"
+                    DisplayMemberBinding="{Binding Name}"
+                    SelectedValueBinding="{Binding SupplierId}"
+                    Width="220"
+                    PlaceholderText="Выберите поставщика"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
 
+    <!-- Таблица позиций -->
+    <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="20">
+      <StackPanel Spacing="16">
         <!-- Заголовки -->
-        <Grid Grid.Row="1" ColumnDefinitions="*, *, *, *" Margin="0,10,0,5">
-            <TextBlock Text="Товар" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0"/>
-            <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <TextBlock Grid.Column="2" Text="Цена закуп." FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <TextBlock Grid.Column="3" Text="Сумма" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Grid ColumnDefinitions="*, 80, 100, 90" Margin="0,0,0,8">
+          <TextBlock Text="Товар" FontWeight="600" Foreground="#344054"/>
+          <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="600" Foreground="#344054" TextAlignment="Center"/>
+          <TextBlock Grid.Column="2" Text="Цена закуп." FontWeight="600" Foreground="#344054" TextAlignment="Center"/>
+          <TextBlock Grid.Column="3" Text="Сумма" FontWeight="600" Foreground="#344054" TextAlignment="Right"/>
         </Grid>
 
-        <!-- Список позиций -->
-        <ListBox Grid.Row="2" x:Name="itemsList"
+        <!-- Список -->
+        <ListBox x:Name="itemsList"
                  ItemsSource="{Binding Items}"
-                 Margin="0,5"
-                 BorderThickness="1" BorderBrush="#DDDDDD">
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="Padding" Value="2"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                </Style>
-            </ListBox.Styles>
-            <ListBox.ItemTemplate>
-                <DataTemplate DataType="vm:SupplyItemViewModel">
-                    <Grid ColumnDefinitions="*, *, *, *" HorizontalAlignment="Stretch">
-                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Products}"
-                                  SelectedValue="{Binding ProductId, Mode=TwoWay}"
-                                  DisplayMemberBinding="{Binding Name}"
-                                  SelectedValueBinding="{Binding ProductId}"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Center"
-                                  Margin="2"/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding Quantity, Mode=TwoWay}"
-                                 HorizontalAlignment="Stretch"
-                                 VerticalAlignment="Center"
-                                 Margin="4,0"
-                                 TextAlignment="Center"/>
-                        <TextBox Grid.Column="2"
-                                 Text="{Binding UnitPurchasePrice, Mode=TwoWay}"
-                                 HorizontalAlignment="Stretch"
-                                 VerticalAlignment="Center"
-                                 Margin="4,0"
-                                 TextAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Text="{Binding Total, StringFormat={}{0:F2}}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Margin="10,0" FontWeight="SemiBold"/>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
+                 BorderThickness="0"
+                 Background="#F8F9FA"
+                 CornerRadius="8">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="vm:SupplyItemViewModel">
+              <Grid ColumnDefinitions="*, 80, 100, 90" Margin="0,4" VerticalAlignment="Center">
+                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Products}"
+                          SelectedValue="{Binding ProductId, Mode=TwoWay}"
+                          DisplayMemberBinding="{Binding Name}"
+                          SelectedValueBinding="{Binding ProductId}"
+                          PlaceholderText="Выберите товар"/>
+                <TextBox Grid.Column="1" Text="{Binding Quantity, Mode=TwoWay}" TextAlignment="Center" Margin="6,0"/>
+                <TextBox Grid.Column="2" Text="{Binding UnitPurchasePrice, Mode=TwoWay}" TextAlignment="Center" Margin="6,0"/>
+                <TextBlock Grid.Column="3" Text="{Binding Total, StringFormat={}{0:F2} ₽}" FontWeight="600" TextAlignment="Right" VerticalAlignment="Center" Foreground="#101828"/>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
         </ListBox>
 
         <!-- Итого -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5">
-            <TextBlock Text="Итого по поставке:" FontWeight="Bold" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding OverallTotal, StringFormat={}{0:F2} ₽}"
-                       FontWeight="Bold" FontSize="16" Margin="10,0"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,8,0,0">
+          <TextBlock Text="Итого по поставке:" FontWeight="600" Foreground="#344054"/>
+          <TextBlock Text="{Binding OverallTotal, StringFormat={}{0:F2} ₽}" FontWeight="700" FontSize="20" Foreground="#0078D4"/>
         </StackPanel>
 
         <!-- Кнопки -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-            <Button Content="Добавить позицию" Command="{Binding AddItemCommand}"/>
-            <Button Content="Удалить позицию" Command="{Binding DeleteItemCommand}"
-                    CommandParameter="{Binding SelectedItem, ElementName=itemsList}"/>
-            <Button Content="Сохранить поставку" Command="{Binding SaveSupplyCommand}" Background="#FFD700"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
+          <Button Content="Добавить позицию" Command="{Binding AddItemCommand}"/>
+          <Button Content="Удалить позицию" Command="{Binding DeleteItemCommand}" CommandParameter="{Binding SelectedItem, ElementName=itemsList}"/>
+          <Button Content="Сохранить поставку" Command="{Binding SaveSupplyCommand}" Classes="Primary" Width="180"/>
         </StackPanel>
-    </Grid>
+      </StackPanel>
+    </Border>
+  </StackPanel>
 </UserControl>
