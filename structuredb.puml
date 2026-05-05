@@ -1,0 +1,69 @@
+@startuml
+skinparam linetype ortho
+
+entity "Supplier" as Supplier {
+  * **supplier_id** : number <<generated>>
+  --
+  * name : text
+  phone : text
+  email : text
+}
+
+entity "Category" as Category {
+  * **category_id** : number <<generated>>
+  --
+  * name : text
+}
+
+entity "Product" as Product {
+  * **product_id** : number <<generated>>
+  --
+  * name : text
+  description : text
+  * current_price : number
+  * stock_quantity : integer
+  * category_id : number <<FK>>
+}
+
+entity "Supply" as Supply {
+  * **supply_id** : number <<generated>>
+  --
+  * supplier_id : number <<FK>>
+  * supply_date : date
+  * total_cost : number
+}
+
+entity "SupplyItem" as SupplyItem {
+  * **supply_item_id** : number <<generated>>
+  --
+  * supply_id : number <<FK>>
+  * product_id : number <<FK>>
+  * quantity : integer
+  * unit_purchase_price : number
+}
+
+entity "Sale" as Sale {
+  * **sale_id** : number <<generated>>
+  --
+  * sale_datetime : datetime
+  * total_amount : number
+}
+
+entity "SaleItem" as SaleItem {
+  * **sale_item_id** : number <<generated>>
+  --
+  * sale_id : number <<FK>>
+  * product_id : number <<FK>>
+  * quantity : integer
+  * unit_sale_price : number
+  * unit_cost_price : number
+}
+
+Product }|--|| Category
+Supply }|--|| Supplier
+SupplyItem }|--|| Supply
+SupplyItem }|--|| Product
+SaleItem }|--|| Sale
+SaleItem }|--|| Product
+
+@enduml

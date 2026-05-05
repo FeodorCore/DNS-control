@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Desktop.ViewModels"
+             x:Class="Desktop.Views.SuppliersView"
+             x:DataType="vm:SuppliersViewModel">
+    <Grid ColumnDefinitions="300, *" RowDefinitions="*, Auto">
+        <ListBox Grid.Column="0" ItemsSource="{Binding Suppliers}"
+                 SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
+                 DisplayMemberBinding="{Binding Name}" Margin="5"/>
+        <StackPanel Grid.Column="1" Margin="10" Spacing="6">
+            <TextBlock Text="Название"/>
+            <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}"/>
+            <TextBlock Text="Телефон"/>
+            <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}"/>
+            <TextBlock Text="Email"/>
+            <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    HorizontalAlignment="Center" Margin="10" Spacing="10">
+            <Button Content="Добавить" Command="{Binding AddCommand}"/>
+            <Button Content="Удалить" Command="{Binding DeleteCommand}"/>
+            <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

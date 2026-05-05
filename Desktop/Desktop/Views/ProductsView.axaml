@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Desktop.ViewModels"
+             xmlns:models="using:Desktop.Models"
+             x:Class="Desktop.Views.ProductsView"
+             x:DataType="vm:ProductsViewModel">
+    <Grid ColumnDefinitions="300, *" RowDefinitions="*, Auto">
+        <!-- Product list -->
+        <ListBox Grid.Column="0" ItemsSource="{Binding Products}"
+                 SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                 Margin="5">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="models:Product">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding CategoryName}" Foreground="Gray"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        
+        <!-- Edit panel -->
+        <StackPanel Grid.Column="1" Margin="10" Spacing="6">
+            <TextBlock Text="Название"/>
+            <TextBox Text="{Binding SelectedProduct.Name, Mode=TwoWay}"/>
+            <TextBlock Text="Описание"/>
+            <TextBox Text="{Binding SelectedProduct.Description, Mode=TwoWay}"/>
+            <TextBlock Text="Цена"/>
+            <TextBox Text="{Binding SelectedProduct.CurrentPrice, Mode=TwoWay}"/>
+            <TextBlock Text="Остаток"/>
+            <TextBox Text="{Binding SelectedProduct.StockQuantity, Mode=TwoWay}" IsReadOnly="True"/>
+            <TextBlock Text="Категория"/>
+            <ComboBox ItemsSource="{Binding Categories}"
+                      SelectedValue="{Binding SelectedProduct.CategoryId, Mode=TwoWay}"
+                      DisplayMemberBinding="{Binding Name}"
+                      SelectedValueBinding="{Binding CategoryId}"/>
+        </StackPanel>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    HorizontalAlignment="Center" Margin="10" Spacing="10">
+            <Button Content="Добавить" Command="{Binding AddCommand}"/>
+            <Button Content="Удалить" Command="{Binding DeleteCommand}"/>
+            <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

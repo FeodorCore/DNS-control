@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Desktop.ViewModels"
+             x:Class="Desktop.Views.CategoriesView"
+             x:DataType="vm:CategoriesViewModel">
+    <Grid ColumnDefinitions="250, *" RowDefinitions="*, Auto">
+        <ListBox Grid.Column="0" ItemsSource="{Binding Categories}"
+                 SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                 DisplayMemberBinding="{Binding Name}" Margin="5"/>
+        <StackPanel Grid.Column="1" Margin="10" Spacing="6">
+            <TextBlock Text="Название категории"/>
+            <TextBox Text="{Binding SelectedCategory.Name, Mode=TwoWay}" IsEnabled="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    HorizontalAlignment="Center" Margin="10" Spacing="10">
+            <Button Content="Добавить" Command="{Binding AddCommand}"/>
+            <Button Content="Удалить" Command="{Binding DeleteCommand}"/>
+            <Button Content="Сохранить" Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
