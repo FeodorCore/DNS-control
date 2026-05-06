@@ -6,7 +6,7 @@
              x:CompileBindings="False">
     <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
         <StackPanel Spacing="20">
-            <TextBlock Classes="Header" Text="Формирование отчёта"/>
+            <TextBlock Classes="Header" Text="Формирование отчёта" Foreground="#ff9519"/>
       
             <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
                 <StackPanel Grid.Column="0">

@@ -6,31 +6,38 @@
   <Application.Styles>
     <FluentTheme />
     
-    <!-- Кнопки -->
+    <!-- General Button -->
     <Style Selector="Button">
       <Setter Property="Padding" Value="14,8"/>
       <Setter Property="CornerRadius" Value="6"/>
       <Setter Property="FontSize" Value="14"/>
       <Setter Property="FontWeight" Value="500"/>
-      <Setter Property="Background" Value="#E9ECEF"/>
-      <Setter Property="Foreground" Value="#344054"/>
+      <Setter Property="Background" Value="#F2F2F2"/>
+      <Setter Property="Foreground" Value="#333333"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="BorderBrush" Value="#D0D5DD"/>
+      <Setter Property="BorderBrush" Value="#CCCCCC"/>
     </Style>
     <Style Selector="Button:hover">
-      <Setter Property="Background" Value="#D0D5DD"/>
+      <Setter Property="Background" Value="#E6E6E6"/>
     </Style>
     <Style Selector="Button:pressed">
-      <Setter Property="Background" Value="#B8C0CC"/>
+      <Setter Property="Background" Value="#D9D9D9"/>
     </Style>
+
+    <!-- Primary Button - DNS Orange -->
     <Style Selector="Button.Primary">
-      <Setter Property="Background" Value="#0078D4"/>
+      <Setter Property="Background" Value="#ff9519"/>
       <Setter Property="Foreground" Value="White"/>
-      <Setter Property="BorderBrush" Value="#006CBE"/>
+      <Setter Property="BorderBrush" Value="#e6860f"/>
     </Style>
     <Style Selector="Button.Primary:hover">
-      <Setter Property="Background" Value="#106EBE"/>
+      <Setter Property="Background" Value="#e6860f"/>
     </Style>
+    <Style Selector="Button.Primary:pressed">
+      <Setter Property="Background" Value="#cc7a00"/>
+    </Style>
+
+    <!-- Danger Button -->
     <Style Selector="Button.Danger">
       <Setter Property="Background" Value="#D83B01"/>
       <Setter Property="Foreground" Value="White"/>
@@ -40,7 +47,7 @@
       <Setter Property="Background" Value="#A42B01"/>
     </Style>
 
-    <!-- Поля ввода -->
+    <!-- Input Controls -->
     <Style Selector="TextBox, ComboBox, DatePicker">
       <Setter Property="Padding" Value="10,8"/>
       <Setter Property="FontSize" Value="14"/>
@@ -54,21 +61,21 @@
       <Setter Property="Foreground" Value="#98A2B3"/>
     </Style>
 
-    <!-- Лейблы -->
+    <!-- Labels -->
     <Style Selector="TextBlock.Label">
       <Setter Property="FontSize" Value="13"/>
-      <Setter Property="Foreground" Value="#667085"/>
+      <Setter Property="Foreground" Value="#666666"/>
       <Setter Property="Margin" Value="0,0,0,6"/>
       <Setter Property="FontWeight" Value="500"/>
     </Style>
     <Style Selector="TextBlock.Header">
       <Setter Property="FontSize" Value="18"/>
       <Setter Property="FontWeight" Value="600"/>
-      <Setter Property="Foreground" Value="#101828"/>
+      <Setter Property="Foreground" Value="#2E2E2E"/>
       <Setter Property="Margin" Value="0,0,0,16"/>
     </Style>
 
-    <!-- Списки -->
+    <!-- Lists -->
     <Style Selector="ListBox">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
@@ -80,10 +87,10 @@
       <Setter Property="CornerRadius" Value="8"/>
     </Style>
     <Style Selector="ListBoxItem:hover">
-      <Setter Property="Background" Value="#F2F4F7"/>
+      <Setter Property="Background" Value="#F2F2F2"/>
     </Style>
     <Style Selector="ListBoxItem:selected">
-      <Setter Property="Background" Value="#E6F0FA"/>
+      <Setter Property="Background" Value="#FFF0E0"/>
     </Style>
   </Application.Styles>
 

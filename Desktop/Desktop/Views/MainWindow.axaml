@@ -6,51 +6,49 @@
         Title="DNS Учёт"
         Width="1280" Height="800"
         WindowStartupLocation="CenterScreen"
-        Background="#F8F9FA">
-  <Design.DataContext>
-    <vm:MainWindowViewModel/>
-  </Design.DataContext>
-  <Grid ColumnDefinitions="260, *">
-    <!-- Sidebar -->
-    <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,1,0">
-      <StackPanel>
-        <Border Padding="24,20" Background="#F8FAFC" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1">
-          <TextBlock Text="DNS Учёт" FontSize="22" FontWeight="Bold" Foreground="#0078D4"/>
+        Background="#FDF8F4">
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+    <Grid ColumnDefinitions="260, *">
+        <!-- Left side menu -->
+        <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,1,0">
+            <StackPanel>
+                <Image Source="/Assets/dns.png" HorizontalAlignment="Center" Margin="30"/>
+
+                <ListBox ItemsSource="{Binding MenuItems}"
+                         x:Name="menuList"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Margin="12,12,12,0"
+                         SelectionMode="Single">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="vm:NavigationItem">
+                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="6,8">
+                                <TextBlock Text="●" FontSize="8" VerticalAlignment="Center" Foreground="#ff9519" />
+                                <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="500"
+                                           VerticalAlignment="Center" Foreground="#344054" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
         </Border>
-        <ListBox ItemsSource="{Binding MenuItems}"
-                 x:Name="menuList"
-                 Background="Transparent"
-                 BorderThickness="0"
-                 Margin="12,12,12,0"
-                 SelectionMode="Single">
-          <ListBox.ItemTemplate>
-            <DataTemplate DataType="vm:NavigationItem">
-              <StackPanel Orientation="Horizontal" Spacing="10" Margin="6,8">
-                <TextBlock Text="●" FontSize="8" VerticalAlignment="Center" Foreground="#0078D4"/>
-                <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="500" VerticalAlignment="Center" Foreground="#344054"/>
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </StackPanel>
-    </Border>
 
-    <!-- Main Content -->
-    <Grid Grid.Column="1">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-      </Grid.RowDefinitions>
+        <!-- Main area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-      <!-- Header -->
-      <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="28,16">
-        <TextBlock x:Name="pageTitle" Text="Главная" FontSize="24" FontWeight="600" Foreground="#101828"/>
-      </Border>
+            <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="28,16">
+                <TextBlock x:Name="pageTitle" Text="Главная" FontSize="24" FontWeight="600" Foreground="#ff9519" />
+            </Border>
 
-      <!-- Content -->
-      <ScrollViewer Grid.Row="1" Padding="28" VerticalScrollBarVisibility="Auto">
-        <ContentControl Content="{Binding CurrentView}"/>
-      </ScrollViewer>
+            <ScrollViewer Grid.Row="1" Padding="28" VerticalScrollBarVisibility="Auto">
+                <ContentControl Content="{Binding CurrentView}" />
+            </ScrollViewer>
+        </Grid>
     </Grid>
-  </Grid>
 </Window>
