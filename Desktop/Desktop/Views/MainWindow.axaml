@@ -17,7 +17,7 @@
                 <Image Source="/Assets/dns.png" HorizontalAlignment="Center" Margin="30"/>
 
                 <ListBox ItemsSource="{Binding MenuItems}"
-                         x:Name="menuList"
+                         SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
                          Background="Transparent"
                          BorderThickness="0"
                          Margin="12,12,12,0"
@@ -43,7 +43,7 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,0,1" Padding="28,16">
-                <TextBlock x:Name="pageTitle" Text="Главная" FontSize="24" FontWeight="600" Foreground="#ff9519" />
+                <TextBlock Text="{Binding CurrentTitle}" FontSize="24" FontWeight="600" Foreground="#ff9519" />
             </Border>
 
             <ScrollViewer Grid.Row="1" Padding="28" VerticalScrollBarVisibility="Auto">

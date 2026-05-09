@@ -3,7 +3,7 @@
              xmlns:vm="using:Desktop.ViewModels"
              x:Class="Desktop.Views.ReportsView"
              x:DataType="vm:ReportsViewModel"
-             x:CompileBindings="False">
+             x:CompileBindings="True">
     <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
         <StackPanel Spacing="20">
             <TextBlock Classes="Header" Text="Формирование отчёта" Foreground="#ff9519"/>
