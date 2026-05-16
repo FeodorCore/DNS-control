@@ -7,16 +7,15 @@ using ClosedXML.Excel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Desktop.Data;
-using Npgsql;
 
 namespace Desktop.ViewModels;
 
 public partial class ReportsViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    private string _selectedReport = "Продажи по дням";
+    [ObservableProperty] private string _selectedReport = "Продажи по дням";
 
     private DateTimeOffset? _dateFrom = DateTime.Today.AddMonths(-1);
+
     public DateTimeOffset? DateFrom
     {
         get => _dateFrom;
@@ -24,14 +23,14 @@ public partial class ReportsViewModel : ViewModelBase
     }
 
     private DateTimeOffset? _dateTo = DateTime.Today;
+
     public DateTimeOffset? DateTo
     {
         get => _dateTo;
         set => SetProperty(ref _dateTo, value);
     }
 
-    [ObservableProperty]
-    private string _selectedCategory = "Все";
+    [ObservableProperty] private string _selectedCategory = "Все";
 
     public ObservableCollection<string> ReportTypes { get; } = new()
     {
@@ -56,11 +55,18 @@ public partial class ReportsViewModel : ViewModelBase
 
     private async Task<DataTable?> GenerateDataTableAsync()
     {
+        var db = DatabaseService.Instance;
         DataTable? dt = SelectedReport switch
         {
-            "Товары на складе" => await GetStockReport(),
-            "Продажи по дням" => await GetSalesByDayReport(),
-            "Прибыль по товарам" => await GetProfitByProductReport(),
+            "Товары на складе" => await db.GetStockReportAsync(),
+            "Продажи по дням" => await db.GetSalesByDayReportAsync(
+                DateFrom?.DateTime ?? DateTime.MinValue,
+                DateTo?.DateTime ?? DateTime.MaxValue,
+                SelectedCategory),
+            "Прибыль по товарам" => await db.GetProfitByProductReportAsync(
+                DateFrom?.DateTime ?? DateTime.MinValue,
+                DateTo?.DateTime ?? DateTime.MaxValue,
+                SelectedCategory),
             _ => null
         };
         return dt;
@@ -73,7 +79,7 @@ public partial class ReportsViewModel : ViewModelBase
         if (table == null || table.Rows.Count == 0)
             return;
 
-        var window = App.Current?.ApplicationLifetime is 
+        var window = App.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
             ? desktop.MainWindow
             : null;
@@ -98,65 +104,5 @@ public partial class ReportsViewModel : ViewModelBase
         using var wb = new XLWorkbook();
         wb.Worksheets.Add(table, "Отчёт");
         wb.SaveAs(stream);
-    }
-
-    private async Task<DataTable> GetStockReport()
-    {
-        var dt = new DataTable();
-        using var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=postgres;Username=admin;Password=admin");
-        await conn.OpenAsync();
-        var cmd = new NpgsqlCommand(
-            @"SELECT p.name AS Товар, c.name AS Категория, p.stock_quantity AS Остаток, p.current_price AS Цена
-              FROM product p JOIN category c ON p.category_id = c.category_id
-              ORDER BY c.name, p.name", conn);
-        using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
-    }
-
-    private async Task<DataTable> GetSalesByDayReport()
-    {
-        var dt = new DataTable();
-        using var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=postgres;Username=admin;Password=admin");
-        await conn.OpenAsync();
-        var cmd = new NpgsqlCommand(
-            @"SELECT s.sale_datetime::date AS Дата, COUNT(s.sale_id) AS КоличествоЧеков, SUM(s.total_amount) AS СуммаПродаж,
-                     SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
-              FROM sale s
-              JOIN sale_item si ON s.sale_id = si.sale_id
-              JOIN product p ON si.product_id = p.product_id
-              WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
-              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
-              GROUP BY s.sale_datetime::date
-              ORDER BY Дата", conn);
-        cmd.Parameters.AddWithValue("d1", DateFrom?.DateTime ?? DateTime.MinValue);
-        cmd.Parameters.AddWithValue("d2", DateTo?.DateTime ?? DateTime.MaxValue);
-        cmd.Parameters.AddWithValue("cat", SelectedCategory);
-        using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
-    }
-
-    private async Task<DataTable> GetProfitByProductReport()
-    {
-        var dt = new DataTable();
-        using var conn = new NpgsqlConnection("Host=localhost;Port=5432;Database=postgres;Username=admin;Password=admin");
-        await conn.OpenAsync();
-        var cmd = new NpgsqlCommand(
-            @"SELECT p.name AS Товар, SUM(si.quantity) AS Продано, 
-                     SUM(si.quantity * si.unit_sale_price) AS Выручка,
-                     SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
-              FROM sale_item si JOIN product p ON si.product_id = p.product_id
-              JOIN sale s ON si.sale_id = s.sale_id
-              WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
-              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
-              GROUP BY p.product_id, p.name
-              ORDER BY Прибыль DESC", conn);
-        cmd.Parameters.AddWithValue("d1", DateFrom?.DateTime ?? DateTime.MinValue);
-        cmd.Parameters.AddWithValue("d2", DateTo?.DateTime ?? DateTime.MaxValue);
-        cmd.Parameters.AddWithValue("cat", SelectedCategory);
-        using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
     }
 }

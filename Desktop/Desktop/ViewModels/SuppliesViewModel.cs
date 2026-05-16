@@ -61,6 +61,9 @@ public partial class SuppliesViewModel : ViewModelBase
 
     public decimal OverallTotal => Items.Sum(i => i.Total);
 
+    [ObservableProperty]
+    private string? _errorMessage;  // Сообщение об ошибке
+
     public SuppliesViewModel() => _ = InitializeAsync();
 
     private async Task InitializeAsync()
@@ -78,6 +81,7 @@ public partial class SuppliesViewModel : ViewModelBase
         newItem.PropertyChanged += (_, _) => OnPropertyChanged(nameof(OverallTotal));
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
+        ErrorMessage = null; // Сбросить ошибку при изменении
     }
 
     [RelayCommand]
@@ -87,25 +91,66 @@ public partial class SuppliesViewModel : ViewModelBase
         item.PropertyChanged -= (_, _) => OnPropertyChanged(nameof(OverallTotal));
         Items.Remove(item);
         OnPropertyChanged(nameof(OverallTotal));
+        ErrorMessage = null;
     }
 
     [RelayCommand]
     private async Task SaveSupplyAsync()
     {
+        // 1. Проверка выбора поставщика
+        if (SupplierId == 0)
+        {
+            ErrorMessage = "Выберите поставщика.";
+            return;
+        }
+
+        // 2. Проверка наличия позиций
+        if (Items.Count == 0)
+        {
+            ErrorMessage = "Добавьте хотя бы одну позицию в поставку.";
+            return;
+        }
+
+        // 3. Проверка каждой позиции
+        foreach (var item in Items)
+        {
+            if (item.ProductId == 0)
+            {
+                ErrorMessage = "Для каждой позиции выберите товар.";
+                return;
+            }
+            if (item.Quantity <= 0)
+            {
+                ErrorMessage = "Количество товара должно быть больше нуля.";
+                return;
+            }
+            if (item.UnitPurchasePrice <= 0)
+            {
+                ErrorMessage = "Цена закупки должна быть больше нуля.";
+                return;
+            }
+        }
+
+        // Если всё ок – сохраняем
         if (CurrentSupply is null) return;
+
         var db = DatabaseService.Instance;
-        var items = Items.Select(i => new SupplyItem
+        var itemsToSave = Items.Select(i => new SupplyItem
         {
             ProductId = i.ProductId,
             Quantity = i.Quantity,
             UnitPurchasePrice = i.UnitPurchasePrice
         }).ToList();
+
         CurrentSupply.TotalCost = OverallTotal;
-        await db.SaveSupplyAsync(CurrentSupply, items);
+        await db.SaveSupplyAsync(CurrentSupply, itemsToSave);
+
+        // Очищаем форму после успешного сохранения
         Items.Clear();
         CurrentSupply = new Supply { SupplyDate = DateTime.Today };
         OnPropertyChanged(nameof(SupplyDate));
         OnPropertyChanged(nameof(SupplierId));
         OnPropertyChanged(nameof(OverallTotal));
+        ErrorMessage = null; // Убираем сообщение об ошибке
     }
 }

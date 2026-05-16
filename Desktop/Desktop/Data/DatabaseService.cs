@@ -13,11 +13,12 @@ public class DatabaseService
 
     public static DatabaseService Instance { get; } = new();
 
-    private DatabaseService() { }
+    private DatabaseService()
+    {
+    }
 
     private NpgsqlConnection CreateConnection() => new(ConnectionString);
 
-    // ---------- Categories ----------
     public async Task<List<Category>> GetCategoriesAsync()
     {
         var list = new List<Category>();
@@ -58,13 +59,13 @@ public class DatabaseService
         await cmd.ExecuteNonQueryAsync();
     }
 
-    // ---------- Suppliers ----------
     public async Task<List<Supplier>> GetSuppliersAsync()
     {
         var list = new List<Supplier>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand("SELECT supplier_id, name, phone, email FROM supplier ORDER BY name", conn);
+        await using var cmd =
+            new NpgsqlCommand("SELECT supplier_id, name, phone, email FROM supplier ORDER BY name", conn);
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
             list.Add(new Supplier
@@ -111,14 +112,13 @@ public class DatabaseService
         await cmd.ExecuteNonQueryAsync();
     }
 
-    // ---------- Products ----------
     public async Task<List<Product>> GetProductsAsync()
     {
         var list = new List<Product>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-@"SELECT p.product_id, p.name, p.description, p.current_price, p.stock_quantity, p.category_id, c.name AS category_name
+            @"SELECT p.product_id, p.name, p.description, p.current_price, p.stock_quantity, p.category_id, c.name AS category_name
 FROM product p JOIN category c ON p.category_id = c.category_id
 ORDER BY p.name", conn);
         await using var reader = await cmd.ExecuteReaderAsync();
@@ -141,7 +141,7 @@ ORDER BY p.name", conn);
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-@"INSERT INTO product (name, description, current_price, stock_quantity, category_id)
+            @"INSERT INTO product (name, description, current_price, stock_quantity, category_id)
 VALUES (@p1, @p2, @p3, @p4, @p5) RETURNING product_id", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
@@ -156,7 +156,7 @@ VALUES (@p1, @p2, @p3, @p4, @p5) RETURNING product_id", conn);
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-@"UPDATE product SET name=@p1, description=@p2, current_price=@p3, stock_quantity=@p4, category_id=@p5
+            @"UPDATE product SET name=@p1, description=@p2, current_price=@p3, stock_quantity=@p4, category_id=@p5
 WHERE product_id=@p6", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
@@ -176,7 +176,6 @@ WHERE product_id=@p6", conn);
         await cmd.ExecuteNonQueryAsync();
     }
 
-    // ---------- Supplies ----------
     public async Task<List<Supply>> GetSuppliesAsync()
     {
         var list = new List<Supply>();
@@ -224,7 +223,7 @@ WHERE product_id=@p6", conn);
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-@"SELECT si.supply_item_id, si.product_id, si.quantity, si.unit_purchase_price, p.name
+            @"SELECT si.supply_item_id, si.product_id, si.quantity, si.unit_purchase_price, p.name
 FROM supply_item si JOIN product p ON si.product_id = p.product_id
 WHERE si.supply_id = @p1", conn);
         cmd.Parameters.AddWithValue("p1", supplyId);
@@ -252,7 +251,8 @@ WHERE si.supply_id = @p1", conn);
             if (supply.SupplyId == 0)
             {
                 await using var cmd = new NpgsqlCommand(
-                    "INSERT INTO supply (supplier_id, supply_date, total_cost) VALUES (@p1,@p2,@p3) RETURNING supply_id", conn, tx);
+                    "INSERT INTO supply (supplier_id, supply_date, total_cost) VALUES (@p1,@p2,@p3) RETURNING supply_id",
+                    conn, tx);
                 cmd.Parameters.AddWithValue("p1", supply.SupplierId);
                 cmd.Parameters.AddWithValue("p2", supply.SupplyDate);
                 cmd.Parameters.AddWithValue("p3", supply.TotalCost);
@@ -273,11 +273,11 @@ WHERE si.supply_id = @p1", conn);
                 await delCmd.ExecuteNonQueryAsync();
             }
 
-            // Insert items
             foreach (var item in items)
             {
                 await using var cmd = new NpgsqlCommand(
-                    "INSERT INTO supply_item (supply_id, product_id, quantity, unit_purchase_price) VALUES (@p1,@p2,@p3,@p4)", conn, tx);
+                    "INSERT INTO supply_item (supply_id, product_id, quantity, unit_purchase_price) VALUES (@p1,@p2,@p3,@p4)",
+                    conn, tx);
                 cmd.Parameters.AddWithValue("p1", supply.SupplyId);
                 cmd.Parameters.AddWithValue("p2", item.ProductId);
                 cmd.Parameters.AddWithValue("p3", item.Quantity);
@@ -291,6 +291,7 @@ WHERE si.supply_id = @p1", conn);
                 upd.Parameters.AddWithValue("pid", item.ProductId);
                 await upd.ExecuteNonQueryAsync();
             }
+
             await tx.CommitAsync();
         }
         catch
@@ -300,7 +301,6 @@ WHERE si.supply_id = @p1", conn);
         }
     }
 
-    // ---------- Sales ----------
     public async Task<List<Sale>> GetSalesAsync()
     {
         var list = new List<Sale>();
@@ -345,7 +345,7 @@ WHERE si.supply_id = @p1", conn);
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-@"SELECT si.sale_item_id, si.product_id, si.quantity, si.unit_sale_price, si.unit_cost_price, p.name
+            @"SELECT si.sale_item_id, si.product_id, si.quantity, si.unit_sale_price, si.unit_cost_price, p.name
 FROM sale_item si JOIN product p ON si.product_id = p.product_id
 WHERE si.sale_id = @p1", conn);
         cmd.Parameters.AddWithValue("p1", saleId);
@@ -394,7 +394,8 @@ WHERE si.sale_id = @p1", conn);
             foreach (var item in items)
             {
                 await using var cmd = new NpgsqlCommand(
-                    "INSERT INTO sale_item (sale_id, product_id, quantity, unit_sale_price, unit_cost_price) VALUES (@p1,@p2,@p3,@p4,@p5)", conn, tx);
+                    "INSERT INTO sale_item (sale_id, product_id, quantity, unit_sale_price, unit_cost_price) VALUES (@p1,@p2,@p3,@p4,@p5)",
+                    conn, tx);
                 cmd.Parameters.AddWithValue("p1", sale.SaleId);
                 cmd.Parameters.AddWithValue("p2", item.ProductId);
                 cmd.Parameters.AddWithValue("p3", item.Quantity);
@@ -409,6 +410,7 @@ WHERE si.sale_id = @p1", conn);
                 upd.Parameters.AddWithValue("pid", item.ProductId);
                 await upd.ExecuteNonQueryAsync();
             }
+
             await tx.CommitAsync();
         }
         catch
@@ -417,6 +419,7 @@ WHERE si.sale_id = @p1", conn);
             throw;
         }
     }
+
     public async Task<decimal?> GetLastPurchasePriceAsync(int productId)
     {
         await using var conn = CreateConnection();
@@ -431,5 +434,82 @@ WHERE si.sale_id = @p1", conn);
         cmd.Parameters.AddWithValue("pid", productId);
         var result = await cmd.ExecuteScalarAsync();
         return result is not null and not DBNull ? (decimal)result : 0m;
+    }
+
+    public async Task<DataTable> GetStockReportAsync()
+    {
+        var dt = new DataTable();
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        const string sql = @"
+            SELECT p.name AS Товар, c.name AS Категория, p.stock_quantity AS Остаток, p.current_price AS Цена
+            FROM product p JOIN category c ON p.category_id = c.category_id
+            ORDER BY c.name, p.name";
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        dt.Load(reader);
+        return dt;
+    }
+
+    /// <summary>Отчёт: Продажи по дням</summary>
+    /// <param name="dateFrom">Начало периода</param>
+    /// <param name="dateTo">Конец периода</param>
+    /// <param name="categoryName">Имя категории или "Все"</param>
+    public async Task<DataTable> GetSalesByDayReportAsync(DateTime dateFrom, DateTime dateTo, string categoryName)
+    {
+        var dt = new DataTable();
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        const string sql = @"
+            SELECT s.sale_datetime::date AS Дата, COUNT(s.sale_id) AS КоличествоЧеков, SUM(s.total_amount) AS СуммаПродаж,
+                   SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
+            FROM sale s
+            JOIN sale_item si ON s.sale_id = si.sale_id
+            JOIN product p ON si.product_id = p.product_id
+            WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
+              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
+            GROUP BY s.sale_datetime::date
+            ORDER BY Дата";
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("d1", dateFrom);
+        cmd.Parameters.AddWithValue("d2", dateTo);
+        cmd.Parameters.AddWithValue("cat", categoryName);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        dt.Load(reader);
+        return dt;
+    }
+
+
+    public async Task<DataTable> GetProfitByProductReportAsync(DateTime dateFrom, DateTime dateTo, string categoryName)
+    {
+        var dt = new DataTable();
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        const string sql = @"
+            SELECT p.name AS Товар, SUM(si.quantity) AS Продано, 
+                   SUM(si.quantity * si.unit_sale_price) AS Выручка,
+                   SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
+            FROM sale_item si JOIN product p ON si.product_id = p.product_id
+            JOIN sale s ON si.sale_id = s.sale_id
+            WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
+              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
+            GROUP BY p.product_id, p.name
+            ORDER BY Прибыль DESC";
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("d1", dateFrom);
+        cmd.Parameters.AddWithValue("d2", dateTo);
+        cmd.Parameters.AddWithValue("cat", categoryName);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        dt.Load(reader);
+        return dt;
+    }
+    public async Task<int> GetProductStockAsync(int productId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand("SELECT stock_quantity FROM product WHERE product_id = @pid", conn);
+        cmd.Parameters.AddWithValue("pid", productId);
+        var result = await cmd.ExecuteScalarAsync();
+        return result is not null and not DBNull ? Convert.ToInt32(result) : 0;
     }
 }
