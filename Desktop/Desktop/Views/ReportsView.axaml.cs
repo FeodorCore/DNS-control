@@ -4,5 +4,8 @@ namespace Desktop.Views;
 
 public partial class ReportsView : UserControl
 {
-    public ReportsView() => InitializeComponent();
+    public ReportsView()
+    {
+        InitializeComponent();
+    }
 }

@@ -5,6 +5,7 @@
              RequestedThemeVariant="Light">
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
     
     <!-- General Button -->
     <Style Selector="Button">

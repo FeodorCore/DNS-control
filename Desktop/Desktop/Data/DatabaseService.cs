@@ -4,6 +4,7 @@ using System.Data;
 using System.Threading.Tasks;
 using Desktop.Models;
 using Npgsql;
+using Desktop.Models.Reports;
 
 namespace Desktop.Data;
 
@@ -13,7 +14,9 @@ public class DatabaseService
 
     public static DatabaseService Instance { get; } = new();
 
-    private DatabaseService() { }
+    private DatabaseService()
+    {
+    }
 
     private NpgsqlConnection CreateConnection() => new(ConnectionString);
 
@@ -64,7 +67,8 @@ public class DatabaseService
         var list = new List<Supplier>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand("SELECT supplier_id, name, phone, email FROM supplier ORDER BY name", conn);
+        await using var cmd =
+            new NpgsqlCommand("SELECT supplier_id, name, phone, email FROM supplier ORDER BY name", conn);
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
             list.Add(new Supplier
@@ -226,6 +230,7 @@ public class DatabaseService
                 upd.Parameters.AddWithValue("pid", item.ProductId);
                 await upd.ExecuteNonQueryAsync();
             }
+
             await tx.CommitAsync();
         }
         catch
@@ -234,7 +239,7 @@ public class DatabaseService
             throw;
         }
     }
-    
+
     public async Task SaveSaleAsync(Sale sale, List<SaleItem> items)
     {
         await using var conn = CreateConnection();
@@ -282,6 +287,7 @@ public class DatabaseService
                 upd.Parameters.AddWithValue("pid", item.ProductId);
                 await upd.ExecuteNonQueryAsync();
             }
+
             await tx.CommitAsync();
         }
         catch
@@ -318,71 +324,105 @@ public class DatabaseService
         return result is not null and not DBNull ? Convert.ToInt32(result) : 0;
     }
 
-    // ========== Отчёты ==========
-    public async Task<DataTable> GetStockReportAsync()
+
+// ========== Отчёты ==========
+
+    public async Task<List<StockReportRow>> GetStockReportAsync()
     {
-        var dt = new DataTable();
+        var list = new List<StockReportRow>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         const string sql = @"
-            SELECT p.name AS Товар, c.name AS Категория, p.stock_quantity AS Остаток, p.current_price AS Цена
-            FROM product p JOIN category c ON p.category_id = c.category_id
-            ORDER BY c.name, p.name";
+        SELECT p.name, c.name, p.stock_quantity, p.current_price
+        FROM product p JOIN category c ON p.category_id = c.category_id
+        ORDER BY c.name, p.name";
         await using var cmd = new NpgsqlCommand(sql, conn);
         await using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
+        while (await reader.ReadAsync())
+        {
+            list.Add(new StockReportRow
+            {
+                ProductName = reader.GetString(0),
+                CategoryName = reader.GetString(1),
+                Stock = reader.GetInt32(2),
+                Price = reader.GetDecimal(3)
+            });
+        }
+
+        return list;
     }
 
-    public async Task<DataTable> GetSalesByDayReportAsync(DateTime dateFrom, DateTime dateTo, string categoryName)
+    public async Task<List<SalesByDayReportRow>> GetSalesByDayReportAsync(
+        DateTime dateFrom, DateTime dateTo, string categoryName)
     {
-        var dt = new DataTable();
+        var list = new List<SalesByDayReportRow>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         const string sql = @"
-            SELECT s.sale_datetime::date AS Дата, 
-                   COUNT(s.sale_id) AS КоличествоЧеков, 
-                   SUM(s.total_amount) AS СуммаПродаж,
-                   SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
-            FROM sale s
-            JOIN sale_item si ON s.sale_id = si.sale_id
-            JOIN product p ON si.product_id = p.product_id
-            WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
-              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
-            GROUP BY s.sale_datetime::date
-            ORDER BY Дата";
+        SELECT s.sale_datetime::date                    AS date,
+               COUNT(DISTINCT s.sale_id)                AS checks_count,
+               SUM(si.quantity * si.unit_sale_price)    AS sales_amount,
+               SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS profit
+        FROM sale s
+        JOIN sale_item si ON s.sale_id = si.sale_id
+        JOIN product p    ON si.product_id = p.product_id
+        WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
+          AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
+        GROUP BY s.sale_datetime::date
+        ORDER BY date";
         await using var cmd = new NpgsqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("d1", dateFrom);
         cmd.Parameters.AddWithValue("d2", dateTo);
         cmd.Parameters.AddWithValue("cat", categoryName);
         await using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
+        while (await reader.ReadAsync())
+        {
+            list.Add(new SalesByDayReportRow
+            {
+                Date = reader.GetDateTime(0),
+                ChecksCount = reader.GetInt32(1),
+                SalesAmount = reader.GetDecimal(2),
+                Profit = reader.GetDecimal(3)
+            });
+        }
+
+        return list;
     }
 
-    public async Task<DataTable> GetProfitByProductReportAsync(DateTime dateFrom, DateTime dateTo, string categoryName)
+    public async Task<List<ProfitByProductReportRow>> GetProfitByProductReportAsync(
+        DateTime dateFrom, DateTime dateTo, string categoryName)
     {
-        var dt = new DataTable();
+        var list = new List<ProfitByProductReportRow>();
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         const string sql = @"
-            SELECT p.name AS Товар, 
-                   SUM(si.quantity) AS Продано,
-                   SUM(si.quantity * si.unit_sale_price) AS Выручка,
-                   SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS Прибыль
-            FROM sale_item si 
-            JOIN product p ON si.product_id = p.product_id
-            JOIN sale s ON si.sale_id = s.sale_id
-            WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
-              AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
-            GROUP BY p.product_id, p.name
-            ORDER BY Прибыль DESC";
+        SELECT p.name                                                     AS name,
+               SUM(si.quantity)                                           AS sold_qty,
+               SUM(si.quantity * si.unit_sale_price)                      AS revenue,
+               SUM(si.quantity * (si.unit_sale_price - si.unit_cost_price)) AS profit
+        FROM sale_item si
+        JOIN product p ON si.product_id = p.product_id
+        JOIN sale    s ON si.sale_id    = s.sale_id
+        WHERE s.sale_datetime::date BETWEEN @d1::date AND @d2::date
+          AND (@cat = 'Все' OR p.category_id = (SELECT category_id FROM category WHERE name = @cat))
+        GROUP BY p.product_id, p.name
+        ORDER BY profit DESC";
         await using var cmd = new NpgsqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("d1", dateFrom);
         cmd.Parameters.AddWithValue("d2", dateTo);
         cmd.Parameters.AddWithValue("cat", categoryName);
         await using var reader = await cmd.ExecuteReaderAsync();
-        dt.Load(reader);
-        return dt;
+        while (await reader.ReadAsync())
+        {
+            list.Add(new ProfitByProductReportRow
+            {
+                ProductName = reader.GetString(0),
+                SoldQuantity = reader.GetInt32(1),
+                Revenue = reader.GetDecimal(2),
+                Profit = reader.GetDecimal(3)
+            });
+        }
+
+        return list;
     }
 }
