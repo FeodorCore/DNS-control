@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Desktop.ViewModels"
-             xmlns:reports="using:Desktop.Models.Reports"
              x:Class="Desktop.Views.ReportsView"
              x:DataType="vm:ReportsViewModel"
              x:CompileBindings="True">
@@ -20,7 +19,7 @@
                 <StackPanel Grid.Column="1">
                     <TextBlock Classes="Label" Text="Категория" />
                     <ComboBox ItemsSource="{Binding Categories}"
-                              SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                              SelectedIndex="{Binding SelectedCategoryIndex, Mode=TwoWay}"
                               HorizontalAlignment="Stretch" />
                 </StackPanel>
             </Grid>

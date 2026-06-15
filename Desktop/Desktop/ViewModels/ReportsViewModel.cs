@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ClosedXML.Excel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia.Threading;
 using Desktop.Data;
 using Desktop.Models.Reports;
 
@@ -14,10 +15,11 @@ public partial class ReportsViewModel : ViewModelBase
 {
     [ObservableProperty] private string _selectedReport = "Товары на складе";
     [ObservableProperty] private string? _errorMessage;
-    [ObservableProperty] private string _selectedCategory = "Все";
+    
+    // Используем индекс вместо строки для надёжной работы ComboBox
+    [ObservableProperty] private int _selectedCategoryIndex = 0;
 
     private DateTimeOffset? _dateFrom = DateTime.Today.AddMonths(-1);
-
     public DateTimeOffset? DateFrom
     {
         get => _dateFrom;
@@ -25,14 +27,12 @@ public partial class ReportsViewModel : ViewModelBase
     }
 
     private DateTimeOffset? _dateTo = DateTime.Today;
-
     public DateTimeOffset? DateTo
     {
         get => _dateTo;
         set => SetProperty(ref _dateTo, value);
     }
 
-    // Три типизированные коллекции — каждая для своего DataGrid
     [ObservableProperty] private ObservableCollection<StockReportRow> _stockRows = new();
     [ObservableProperty] private ObservableCollection<SalesByDayReportRow> _salesByDayRows = new();
     [ObservableProperty] private ObservableCollection<ProfitByProductReportRow> _profitRows = new();
@@ -42,14 +42,13 @@ public partial class ReportsViewModel : ViewModelBase
         "Товары на складе", "Продажи по дням", "Прибыль по товарам"
     };
 
-    public ObservableCollection<string> Categories { get; } = new();
+    // Коллекция категорий — "Все" всегда первый элемент (индекс 0)
+    public ObservableCollection<string> Categories { get; } = new() { "Все" };
 
-    // Вычисляемые свойства для IsVisible в XAML
     public bool IsStockReport => SelectedReport == "Товары на складе";
     public bool IsSalesByDayReport => SelectedReport == "Продажи по дням";
     public bool IsProfitReport => SelectedReport == "Прибыль по товарам";
 
-    // Итоги (для красивого отображения под таблицей)
     [ObservableProperty] private decimal _totalSales;
     [ObservableProperty] private decimal _totalProfit;
     [ObservableProperty] private int _totalChecks;
@@ -57,6 +56,15 @@ public partial class ReportsViewModel : ViewModelBase
     public ReportsViewModel()
     {
         _ = LoadCategoriesAsync();
+    }
+
+    // Если индекс сбросился в -1 (пустой выбор), возвращаем на 0 ("Все")
+    partial void OnSelectedCategoryIndexChanged(int value)
+    {
+        if (value < 0 && Categories.Count > 0)
+        {
+            Dispatcher.UIThread.Post(() => SelectedCategoryIndex = 0);
+        }
     }
 
     partial void OnSelectedReportChanged(string value)
@@ -79,12 +87,32 @@ public partial class ReportsViewModel : ViewModelBase
 
     private async Task LoadCategoriesAsync()
     {
-        var cats = await DatabaseService.Instance.GetCategoriesAsync();
-        var names = cats.Select(c => c.Name).ToList();
-        names.Insert(0, "Все");
-        Categories.Clear();
-        foreach (var n in names) Categories.Add(n);
-        SelectedCategory = "Все";
+        try
+        {
+            var cats = await DatabaseService.Instance.GetCategoriesAsync();
+            var names = cats.Select(c => c.Name).ToList();
+            
+            // Добавляем категории после уже существующего "Все"
+            foreach (var n in names) 
+                Categories.Add(n);
+            
+            // Принудительно выбираем "Все" (индекс 0)
+            SelectedCategoryIndex = 0;
+        }
+        catch
+        {
+            // Если БД недоступна, "Все" уже есть в коллекции
+        }
+    }
+
+    /// <summary>
+    /// Получает название выбранной категории по индексу
+    /// </summary>
+    private string GetSelectedCategoryName()
+    {
+        if (SelectedCategoryIndex >= 0 && SelectedCategoryIndex < Categories.Count)
+            return Categories[SelectedCategoryIndex];
+        return "Все";
     }
 
     [RelayCommand]
@@ -92,24 +120,25 @@ public partial class ReportsViewModel : ViewModelBase
     {
         ErrorMessage = null;
         ClearAll();
-
         try
         {
             var db = DatabaseService.Instance;
             var from = DateFrom?.DateTime ?? DateTime.MinValue;
             var to = DateTo?.DateTime ?? DateTime.MaxValue;
+            
+            // Получаем категорию по индексу
+            var catFilter = GetSelectedCategoryName();
 
             switch (SelectedReport)
             {
                 case "Товары на складе":
-                    var stock = await db.GetStockReportAsync();
+                    var stock = await db.GetStockReportAsync(catFilter);
                     StockRows = new ObservableCollection<StockReportRow>(stock);
                     if (StockRows.Count == 0)
                         ErrorMessage = "Нет товаров на складе.";
                     break;
-
                 case "Продажи по дням":
-                    var sales = await db.GetSalesByDayReportAsync(from, to, SelectedCategory);
+                    var sales = await db.GetSalesByDayReportAsync(from, to, catFilter);
                     SalesByDayRows = new ObservableCollection<SalesByDayReportRow>(sales);
                     TotalChecks = SalesByDayRows.Sum(r => r.ChecksCount);
                     TotalSales = SalesByDayRows.Sum(r => r.SalesAmount);
@@ -117,9 +146,8 @@ public partial class ReportsViewModel : ViewModelBase
                     if (SalesByDayRows.Count == 0)
                         ErrorMessage = "Нет данных для выбранного периода / категории.";
                     break;
-
                 case "Прибыль по товарам":
-                    var profit = await db.GetProfitByProductReportAsync(from, to, SelectedCategory);
+                    var profit = await db.GetProfitByProductReportAsync(from, to, catFilter);
                     ProfitRows = new ObservableCollection<ProfitByProductReportRow>(profit);
                     TotalSales = ProfitRows.Sum(r => r.Revenue);
                     TotalProfit = ProfitRows.Sum(r => r.Profit);
@@ -138,7 +166,6 @@ public partial class ReportsViewModel : ViewModelBase
     private async Task ExportToExcelAsync()
     {
         ErrorMessage = null;
-
         if (StockRows.Count == 0 && SalesByDayRows.Count == 0 && ProfitRows.Count == 0)
         {
             ErrorMessage = "Сначала сформируйте отчёт, чтобы экспортировать его.";
@@ -188,9 +215,7 @@ public partial class ReportsViewModel : ViewModelBase
                     ws1.Cell(r1, 4).Value = row.Price;
                     r1++;
                 }
-
                 break;
-
             case "Продажи по дням":
                 var ws2 = wb.Worksheets.Add("Продажи");
                 ws2.Cell(1, 1).Value = "Дата";
@@ -207,9 +232,7 @@ public partial class ReportsViewModel : ViewModelBase
                     ws2.Cell(r2, 4).Value = row.Profit;
                     r2++;
                 }
-
                 break;
-
             case "Прибыль по товарам":
                 var ws3 = wb.Worksheets.Add("Прибыль");
                 ws3.Cell(1, 1).Value = "Товар";
@@ -226,10 +249,8 @@ public partial class ReportsViewModel : ViewModelBase
                     ws3.Cell(r3, 4).Value = row.Profit;
                     r3++;
                 }
-
                 break;
         }
-
         wb.SaveAs(stream);
     }
 }

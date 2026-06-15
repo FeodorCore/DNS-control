@@ -90,7 +90,7 @@ public class DatabaseService
     public Task SaveSaleAsync(Sale sale, List<SaleItem> items) => _sales.SaveAsync(sale, items);
 
     // Отчёты
-    public Task<List<StockReportRow>> GetStockReportAsync() => _reports.GetStockReportAsync();
+    public Task<List<StockReportRow>> GetStockReportAsync(string categoryName) => _reports.GetStockReportAsync(categoryName);
 
     public Task<List<SalesByDayReportRow>> GetSalesByDayReportAsync(
         DateTime dateFrom, DateTime dateTo, string categoryName)
