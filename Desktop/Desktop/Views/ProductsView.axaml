@@ -4,12 +4,16 @@
              xmlns:models="using:Desktop.Models"
              x:Class="Desktop.Views.ProductsView"
              x:DataType="vm:ProductsViewModel">
+
     <Grid ColumnDefinitions="340, *" ColumnSpacing="24">
 
+        <!-- Левая колонка: список товаров с собственной прокруткой -->
         <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="16">
             <ListBox ItemsSource="{Binding Products}"
-                     SelectedItem="{Binding SelectedProduct, Mode=TwoWay}">
+                     SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="models:Product">
                         <StackPanel>
@@ -24,51 +28,57 @@
             </ListBox>
         </Border>
 
+        <!-- Правая колонка: форма редактирования (фиксирована, прокрутка только если не влезает) -->
         <Border Grid.Column="1" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="24">
-            <StackPanel Spacing="18">
-                <TextBlock Classes="Header" Text="Редактирование товара" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="18">
+                    <TextBlock Classes="Header" Text="Редактирование товара" />
 
-                <StackPanel Spacing="18"
-                            IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Название" />
-                        <TextBox Text="{Binding SelectedProduct.Name, Mode=TwoWay}" Watermark="Введите название" />
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Описание" />
-                        <TextBox Text="{Binding SelectedProduct.Description, Mode=TwoWay}" Watermark="Краткое описание"
-                                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
-                    </StackPanel>
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Classes="Label" Text="Цена продажи" />
-                            <TextBox Text="{Binding SelectedProduct.CurrentPrice, Mode=TwoWay}" Watermark="0.00" />
+                    <StackPanel Spacing="18"
+                                IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Название" />
+                            <TextBox Text="{Binding SelectedProduct.Name, Mode=TwoWay}" Watermark="Введите название" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Classes="Label" Text="Остаток" />
-                            <TextBox Text="{Binding SelectedProduct.StockQuantity, Mode=TwoWay}" IsReadOnly="True" />
+
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Описание" />
+                            <TextBox Text="{Binding SelectedProduct.Description, Mode=TwoWay}" Watermark="Краткое описание"
+                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
                         </StackPanel>
-                    </Grid>
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Категория" />
-                        <ComboBox ItemsSource="{Binding Categories}"
-                                  SelectedValue="{Binding SelectedProduct.CategoryId, Mode=TwoWay}"
-                                  DisplayMemberBinding="{Binding Name}"
-                                  SelectedValueBinding="{Binding CategoryId}"
-                                  PlaceholderText="Выберите категорию" />
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Classes="Label" Text="Цена продажи" />
+                                <TextBox Text="{Binding SelectedProduct.CurrentPrice, Mode=TwoWay}" Watermark="0.00" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Classes="Label" Text="Остаток" />
+                                <TextBox Text="{Binding SelectedProduct.StockQuantity, Mode=TwoWay}" IsReadOnly="True" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Категория" />
+                            <ComboBox ItemsSource="{Binding Categories}"
+                                      SelectedValue="{Binding SelectedProduct.CategoryId, Mode=TwoWay}"
+                                      DisplayMemberBinding="{Binding Name}"
+                                      SelectedValueBinding="{Binding CategoryId}"
+                                      PlaceholderText="Выберите категорию" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
+                        <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
+                        <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
+                                IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <Button Content="Удалить" Command="{Binding DeleteCommand}" Classes="Danger" Margin="12,0,0,0"
+                                IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     </StackPanel>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
-                    <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
-
-                    <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
-                            IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    <Button Content="Удалить" Command="{Binding DeleteCommand}" Classes="Danger" Margin="12,0,0,0"
-                            IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                </StackPanel>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
+
     </Grid>
 </UserControl>

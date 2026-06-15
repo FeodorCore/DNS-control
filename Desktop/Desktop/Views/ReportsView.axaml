@@ -5,118 +5,122 @@
              x:DataType="vm:ReportsViewModel"
              x:CompileBindings="True">
 
-    <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
-        <StackPanel Spacing="20">
-            <TextBlock Classes="Header" Text="Формирование отчёта" Foreground="#ff9519" />
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
+            <StackPanel Spacing="20">
 
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
-                <StackPanel Grid.Column="0">
-                    <TextBlock Classes="Label" Text="Тип отчёта" />
-                    <ComboBox ItemsSource="{Binding ReportTypes}"
-                              SelectedItem="{Binding SelectedReport, Mode=TwoWay}"
-                              HorizontalAlignment="Stretch" />
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                    <TextBlock Classes="Label" Text="Категория" />
-                    <ComboBox ItemsSource="{Binding Categories}"
-                              SelectedIndex="{Binding SelectedCategoryIndex, Mode=TwoWay}"
-                              HorizontalAlignment="Stretch" />
-                </StackPanel>
-            </Grid>
+                <TextBlock Classes="Header" Text="Формирование отчёта" Foreground="#ff9519" />
 
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <TextBlock Classes="Label" Text="Период:" VerticalAlignment="Center" />
-                <TextBlock Text="с" VerticalAlignment="Center" Margin="8,0,0,0" />
-                <DatePicker SelectedDate="{Binding DateFrom}" Width="140" />
-                <TextBlock Text="по" VerticalAlignment="Center" Margin="12,0,0,0" />
-                <DatePicker SelectedDate="{Binding DateTo}" Width="140" />
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Classes="Label" Text="Тип отчёта" />
+                        <ComboBox ItemsSource="{Binding ReportTypes}"
+                                  SelectedItem="{Binding SelectedReport, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Classes="Label" Text="Категория" />
+                        <ComboBox ItemsSource="{Binding Categories}"
+                                  SelectedIndex="{Binding SelectedCategoryIndex, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Classes="Label" Text="Период:" VerticalAlignment="Center" />
+                    <TextBlock Text="с" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    <DatePicker SelectedDate="{Binding DateFrom}" Width="140" />
+                    <TextBlock Text="по" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    <DatePicker SelectedDate="{Binding DateTo}" Width="140" />
+                </StackPanel>
+
+                <Border BorderThickness="0,1,0,0" BorderBrush="#E9ECEF" Padding="0,16,0,0" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                        <Button Content="Сформировать отчёт"
+                                Command="{Binding GenerateReportCommand}"
+                                Classes="Primary" Width="180" />
+                        <Button Content="Экспорт в Excel"
+                                Command="{Binding ExportToExcelCommand}"
+                                Width="160" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#D83B01"
+                           FontWeight="500"
+                           HorizontalAlignment="Center"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                <DataGrid AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding StockRows}"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="1"
+                          BorderBrush="#E9ECEF"
+                          CornerRadius="8"
+                          Height="450"
+                          IsVisible="{Binding IsStockReport}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="2*" />
+                        <DataGridTextColumn Header="Категория" Binding="{Binding CategoryName}" Width="*" />
+                        <DataGridTextColumn Header="Остаток" Binding="{Binding Stock}" Width="*" />
+                        <DataGridTextColumn Header="Цена, ₽" Binding="{Binding Price, StringFormat={}{0:F2}}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding SalesByDayRows}"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="1"
+                          BorderBrush="#E9ECEF"
+                          CornerRadius="8"
+                          Height="450"
+                          IsVisible="{Binding IsSalesByDayReport}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat={}{0:yyyy-MM-dd}}" Width="*" />
+                        <DataGridTextColumn Header="Кол-во чеков" Binding="{Binding ChecksCount}" Width="*" />
+                        <DataGridTextColumn Header="Сумма, ₽" Binding="{Binding SalesAmount, StringFormat={}{0:F2}}"
+                                            Width="*" />
+                        <DataGridTextColumn Header="Прибыль, ₽" Binding="{Binding Profit, StringFormat={}{0:F2}}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <DataGrid AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding ProfitRows}"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="1"
+                          BorderBrush="#E9ECEF"
+                          CornerRadius="8"
+                          Height="450"
+                          IsVisible="{Binding IsProfitReport}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="2*" />
+                        <DataGridTextColumn Header="Продано" Binding="{Binding SoldQuantity}" Width="*" />
+                        <DataGridTextColumn Header="Выручка, ₽" Binding="{Binding Revenue, StringFormat={}{0:F2}}"
+                                            Width="*" />
+                        <DataGridTextColumn Header="Прибыль, ₽" Binding="{Binding Profit, StringFormat={}{0:F2}}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Border Background="#FFF0E0" CornerRadius="8" Padding="16"
+                        IsVisible="{Binding IsStockReport, Converter={x:Static BoolConverters.Not}}">
+                    <StackPanel Orientation="Horizontal" Spacing="24">
+                        <TextBlock Foreground="#344054" FontWeight="500"
+                                   IsVisible="{Binding IsSalesByDayReport}">
+                            <Run Text="Чеков: " /><Run Text="{Binding TotalChecks}" />
+                        </TextBlock>
+                        <TextBlock Foreground="#344054" FontWeight="500">
+                            <Run Text="Итого выручка: " /><Run Text="{Binding TotalSales, StringFormat={}{0:F2} ₽}" />
+                        </TextBlock>
+                        <TextBlock Foreground="#107C10" FontWeight="700">
+                            <Run Text="Прибыль: " /><Run Text="{Binding TotalProfit, StringFormat={}{0:F2} ₽}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
-
-            <Border BorderThickness="0,1,0,0" BorderBrush="#E9ECEF" Padding="0,16,0,0" Margin="0,8,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                    <Button Content="Сформировать отчёт"
-                            Command="{Binding GenerateReportCommand}"
-                            Classes="Primary" Width="180" />
-                    <Button Content="Экспорт в Excel"
-                            Command="{Binding ExportToExcelCommand}"
-                            Width="160" />
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="{Binding ErrorMessage}"
-                       Foreground="#D83B01"
-                       FontWeight="500"
-                       HorizontalAlignment="Center"
-                       IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
-
-            <DataGrid AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      ItemsSource="{Binding StockRows}"
-                      GridLinesVisibility="Horizontal"
-                      BorderThickness="1"
-                      BorderBrush="#E9ECEF"
-                      CornerRadius="8"
-                      Height="450"
-                      IsVisible="{Binding IsStockReport}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="2*" />
-                    <DataGridTextColumn Header="Категория" Binding="{Binding CategoryName}" Width="*" />
-                    <DataGridTextColumn Header="Остаток" Binding="{Binding Stock}" Width="*" />
-                    <DataGridTextColumn Header="Цена, ₽" Binding="{Binding Price, StringFormat={}{0:F2}}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <DataGrid AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      ItemsSource="{Binding SalesByDayRows}"
-                      GridLinesVisibility="Horizontal"
-                      BorderThickness="1"
-                      BorderBrush="#E9ECEF"
-                      CornerRadius="8"
-                      Height="450"
-                      IsVisible="{Binding IsSalesByDayReport}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat={}{0:yyyy-MM-dd}}" Width="*" />
-                    <DataGridTextColumn Header="Кол-во чеков" Binding="{Binding ChecksCount}" Width="*" />
-                    <DataGridTextColumn Header="Сумма, ₽" Binding="{Binding SalesAmount, StringFormat={}{0:F2}}"
-                                        Width="*" />
-                    <DataGridTextColumn Header="Прибыль, ₽" Binding="{Binding Profit, StringFormat={}{0:F2}}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <DataGrid AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      ItemsSource="{Binding ProfitRows}"
-                      GridLinesVisibility="Horizontal"
-                      BorderThickness="1"
-                      BorderBrush="#E9ECEF"
-                      CornerRadius="8"
-                      Height="450"
-                      IsVisible="{Binding IsProfitReport}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="2*" />
-                    <DataGridTextColumn Header="Продано" Binding="{Binding SoldQuantity}" Width="*" />
-                    <DataGridTextColumn Header="Выручка, ₽" Binding="{Binding Revenue, StringFormat={}{0:F2}}"
-                                        Width="*" />
-                    <DataGridTextColumn Header="Прибыль, ₽" Binding="{Binding Profit, StringFormat={}{0:F2}}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <Border Background="#FFF0E0" CornerRadius="8" Padding="16"
-                    IsVisible="{Binding IsStockReport, Converter={x:Static BoolConverters.Not}}">
-                <StackPanel Orientation="Horizontal" Spacing="24">
-                    <TextBlock Foreground="#344054" FontWeight="500"
-                               IsVisible="{Binding IsSalesByDayReport}">
-                        <Run Text="Чеков: " /><Run Text="{Binding TotalChecks}" />
-                    </TextBlock>
-                    <TextBlock Foreground="#344054" FontWeight="500">
-                        <Run Text="Итого выручка: " /><Run Text="{Binding TotalSales, StringFormat={}{0:F2} ₽}" />
-                    </TextBlock>
-                    <TextBlock Foreground="#107C10" FontWeight="700">
-                        <Run Text="Прибыль: " /><Run Text="{Binding TotalProfit, StringFormat={}{0:F2} ₽}" />
-                    </TextBlock>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-    </Border>
+        </Border>
+    </ScrollViewer>
 </UserControl>

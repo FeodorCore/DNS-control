@@ -7,9 +7,11 @@
         Width="1280" Height="800"
         WindowStartupLocation="CenterScreen"
         Background="#FDF8F4">
+
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
+
     <Grid ColumnDefinitions="260, *">
         <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#E9ECEF" BorderThickness="0,0,1,0">
             <StackPanel>
@@ -44,9 +46,8 @@
                 <TextBlock Text="{Binding CurrentTitle}" FontSize="24" FontWeight="600" Foreground="#ff9519" />
             </Border>
 
-            <ScrollViewer Grid.Row="1" Padding="28" VerticalScrollBarVisibility="Auto">
-                <ContentControl Content="{Binding CurrentView}" />
-            </ScrollViewer>
+            <!-- УБРАЛИ ScrollViewer! ContentControl теперь занимает всё доступное пространство -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentView}" Margin="28" />
         </Grid>
     </Grid>
 </Window>

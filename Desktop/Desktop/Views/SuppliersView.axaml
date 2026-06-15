@@ -3,45 +3,54 @@
              xmlns:vm="using:Desktop.ViewModels"
              x:Class="Desktop.Views.SuppliersView"
              x:DataType="vm:SuppliersViewModel">
+
     <Grid ColumnDefinitions="320, *" ColumnSpacing="24">
 
+        <!-- Левая колонка: список поставщиков с собственной прокруткой -->
         <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="16">
             <ListBox ItemsSource="{Binding Suppliers}"
                      SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
-                     DisplayMemberBinding="{Binding Name}" />
+                     DisplayMemberBinding="{Binding Name}"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
         </Border>
 
+        <!-- Правая колонка: форма редактирования -->
         <Border Grid.Column="1" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="24">
-            <StackPanel Spacing="18">
-                <TextBlock Classes="Header" Text="Редактирование поставщика" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="18">
+                    <TextBlock Classes="Header" Text="Редактирование поставщика" />
 
-                <StackPanel Spacing="18"
-                            IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Название" />
-                        <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" Watermark="Название компании" />
+                    <StackPanel Spacing="18"
+                                IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Название" />
+                            <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" Watermark="Название компании" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Телефон" />
+                            <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}" Watermark="+375 XX XXX-XX-XX" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Email" />
+                            <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}" Watermark="email@example.com" />
+                        </StackPanel>
                     </StackPanel>
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Телефон" />
-                        <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}" Watermark="+375 XX XXX-XX-XX" />
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Classes="Label" Text="Email" />
-                        <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}" Watermark="email@example.com" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
+                        <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
+                        <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
+                                IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        <Button Content="Удалить" Command="{Binding DeleteCommand}" Classes="Danger" Margin="12,0,0,0"
+                                IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     </StackPanel>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
-                    <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
-
-                    <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
-                            IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                    <Button Content="Удалить" Command="{Binding DeleteCommand}" Classes="Danger" Margin="12,0,0,0"
-                            IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                </StackPanel>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
+
     </Grid>
 </UserControl>
