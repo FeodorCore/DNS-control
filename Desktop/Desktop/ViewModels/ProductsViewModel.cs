@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,19 +13,41 @@ namespace Desktop.ViewModels;
 public partial class ProductsViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Product> _products = new();
-
     [ObservableProperty] private Product? _selectedProduct;
-
     [ObservableProperty] private ObservableCollection<Category> _categories = new();
+    [ObservableProperty] private string _searchText = string.Empty;
+
+    // Полный список товаров из БД (используется как источник для фильтрации)
+    private List<Product> _allProducts = new();
 
     public ProductsViewModel() => _ = LoadAsync();
 
     private async Task LoadAsync()
     {
         var db = DatabaseService.Instance;
-        var products = await db.GetProductsAsync();
-        Products = new ObservableCollection<Product>(products);
+        _allProducts = await db.GetProductsAsync();
         Categories = new ObservableCollection<Category>(await db.GetCategoriesAsync());
+        ApplyFilter();
+    }
+
+    partial void OnSearchTextChanged(string value) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        var query = SearchText?.Trim() ?? string.Empty;
+        IEnumerable<Product> filtered = _allProducts;
+
+        if (!string.IsNullOrEmpty(query))
+        {
+            filtered = _allProducts.Where(p =>
+                p.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
+        Products = new ObservableCollection<Product>(filtered);
+
+        // Если выбранный товар больше не виден — сбрасываем выбор
+        if (SelectedProduct != null && !Products.Contains(SelectedProduct))
+            SelectedProduct = Products.FirstOrDefault();
     }
 
     [RelayCommand]
@@ -41,7 +64,8 @@ public partial class ProductsViewModel : ViewModelBase
             CategoryId = Categories.First().CategoryId
         };
         await DatabaseService.Instance.AddProductAsync(product);
-        Products.Add(product);
+        _allProducts.Add(product);
+        ApplyFilter();
         SelectedProduct = product;
     }
 
@@ -50,8 +74,10 @@ public partial class ProductsViewModel : ViewModelBase
     {
         if (SelectedProduct is null) return;
         await DatabaseService.Instance.DeleteProductAsync(SelectedProduct.ProductId);
-        Products.Remove(SelectedProduct);
+        _allProducts.RemoveAll(p => p.ProductId == SelectedProduct.ProductId);
+        var toRemove = SelectedProduct;
         SelectedProduct = null;
+        ApplyFilter();
     }
 
     [RelayCommand]
@@ -61,7 +87,10 @@ public partial class ProductsViewModel : ViewModelBase
         await DatabaseService.Instance.UpdateProductAsync(SelectedProduct);
         var cat = Categories.FirstOrDefault(c => c.CategoryId == SelectedProduct.CategoryId);
         if (cat != null) SelectedProduct.CategoryName = cat.Name;
-        var index = Products.IndexOf(SelectedProduct);
-        if (index >= 0) Products[index] = SelectedProduct;
+
+        var idxAll = _allProducts.FindIndex(p => p.ProductId == SelectedProduct.ProductId);
+        if (idxAll >= 0) _allProducts[idxAll] = SelectedProduct;
+
+        ApplyFilter();
     }
 }

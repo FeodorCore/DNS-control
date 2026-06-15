@@ -3,17 +3,35 @@
              xmlns:vm="using:Desktop.ViewModels"
              x:Class="Desktop.Views.SuppliersView"
              x:DataType="vm:SuppliersViewModel">
-
     <Grid ColumnDefinitions="320, *" ColumnSpacing="24">
-
-        <!-- Левая колонка: список поставщиков с собственной прокруткой -->
+        <!-- Левая колонка: поиск + список поставщиков -->
         <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="16">
-            <ListBox ItemsSource="{Binding Suppliers}"
-                     SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
-                     DisplayMemberBinding="{Binding Name}"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+            <Grid RowDefinitions="Auto, *">
+                <!-- Поисковая строка -->
+                <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="8" BorderBrush="#E9ECEF" BorderThickness="1"
+                        Padding="10,4" Margin="0,0,0,12">
+                    <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                        <TextBlock Grid.Column="0" Text="🔍" FontSize="14"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#98A2B3" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchText, Mode=TwoWay}"
+                                 Watermark="Поиск по названию..."
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Padding="4,4"
+                                 FontSize="14" />
+                    </Grid>
+                </Border>
+
+                <!-- Список поставщиков -->
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Suppliers}"
+                         SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
+                         DisplayMemberBinding="{Binding Name}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+            </Grid>
         </Border>
 
         <!-- Правая колонка: форма редактирования -->
@@ -22,25 +40,21 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование поставщика" />
-
                     <StackPanel Spacing="18"
                                 IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Название" />
                             <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" Watermark="Название компании" />
                         </StackPanel>
-
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Телефон" />
                             <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}" Watermark="+375 XX XXX-XX-XX" />
                         </StackPanel>
-
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Email" />
                             <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}" Watermark="email@example.com" />
                         </StackPanel>
                     </StackPanel>
-
                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                         <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
                         <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
@@ -51,6 +65,5 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
-
     </Grid>
 </UserControl>

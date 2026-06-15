@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,13 +14,35 @@ public partial class SuppliersViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Supplier> _suppliers = new();
     [ObservableProperty] private Supplier? _selectedSupplier;
+    [ObservableProperty] private string _searchText = string.Empty;
+
+    private List<Supplier> _allSuppliers = new();
 
     public SuppliersViewModel() => _ = LoadAsync();
 
     private async Task LoadAsync()
     {
-        var list = await DatabaseService.Instance.GetSuppliersAsync();
-        Suppliers = new ObservableCollection<Supplier>(list);
+        _allSuppliers = await DatabaseService.Instance.GetSuppliersAsync();
+        ApplyFilter();
+    }
+
+    partial void OnSearchTextChanged(string value) => ApplyFilter();
+
+    private void ApplyFilter()
+    {
+        var query = SearchText?.Trim() ?? string.Empty;
+        IEnumerable<Supplier> filtered = _allSuppliers;
+
+        if (!string.IsNullOrEmpty(query))
+        {
+            filtered = _allSuppliers.Where(s =>
+                s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
+        Suppliers = new ObservableCollection<Supplier>(filtered);
+
+        if (SelectedSupplier != null && !Suppliers.Contains(SelectedSupplier))
+            SelectedSupplier = Suppliers.FirstOrDefault();
     }
 
     [RelayCommand]
@@ -25,7 +50,8 @@ public partial class SuppliersViewModel : ViewModelBase
     {
         var supplier = new Supplier { Name = "Новый поставщик" };
         await DatabaseService.Instance.AddSupplierAsync(supplier);
-        Suppliers.Add(supplier);
+        _allSuppliers.Add(supplier);
+        ApplyFilter();
         SelectedSupplier = supplier;
     }
 
@@ -34,8 +60,9 @@ public partial class SuppliersViewModel : ViewModelBase
     {
         if (SelectedSupplier is null) return;
         await DatabaseService.Instance.DeleteSupplierAsync(SelectedSupplier.SupplierId);
-        Suppliers.Remove(SelectedSupplier);
+        _allSuppliers.RemoveAll(s => s.SupplierId == SelectedSupplier.SupplierId);
         SelectedSupplier = null;
+        ApplyFilter();
     }
 
     [RelayCommand]
@@ -43,7 +70,8 @@ public partial class SuppliersViewModel : ViewModelBase
     {
         if (SelectedSupplier is null) return;
         await DatabaseService.Instance.UpdateSupplierAsync(SelectedSupplier);
-        var idx = Suppliers.IndexOf(SelectedSupplier);
-        if (idx >= 0) Suppliers[idx] = SelectedSupplier;
+        var idx = _allSuppliers.FindIndex(s => s.SupplierId == SelectedSupplier.SupplierId);
+        if (idx >= 0) _allSuppliers[idx] = SelectedSupplier;
+        ApplyFilter();
     }
 }
