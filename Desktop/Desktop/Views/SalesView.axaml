@@ -15,39 +15,35 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-
-            <!-- Items list -->
             <Border Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="20">
                 <StackPanel Spacing="16">
-                    <!-- Увеличены ширины колонок для цен и суммы, чтобы текст не обрезался -->
-                    <Grid ColumnDefinitions="*, 90, 140, 140, 110" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="2*, 70, 70, 120, 120, 100" Margin="0,0,0,8">
                         <TextBlock Text="Товар" FontWeight="600" Foreground="#344054" />
-                        <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="600" Foreground="#344054"
-                                   TextAlignment="Center" />
-                        <TextBlock Grid.Column="2" Text="Цена продажи" FontWeight="600" Foreground="#344054"
-                                   TextAlignment="Center" />
-                        <TextBlock Grid.Column="3" Text="Себестоимость" FontWeight="600" Foreground="#344054"
-                                   TextAlignment="Center" />
-                        <TextBlock Grid.Column="4" Text="Сумма" FontWeight="600" Foreground="#344054" TextAlignment="Right" />
+                        <TextBlock Grid.Column="1" Text="Остаток" FontWeight="600" Foreground="#344054" TextAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="Кол-во" FontWeight="600" Foreground="#344054" TextAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="Цена продажи" FontWeight="600" Foreground="#344054" TextAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="Себестоимость" FontWeight="600" Foreground="#344054" TextAlignment="Center" />
+                        <TextBlock Grid.Column="5" Text="Сумма" FontWeight="600" Foreground="#344054" TextAlignment="Right" />
                     </Grid>
-
+                    
                     <ListBox x:Name="itemsList" ItemsSource="{Binding Items}" BorderThickness="0" Background="#F8F9FA"
                              CornerRadius="8">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="vm:SaleItemViewModel">
-                                <Grid ColumnDefinitions="*, 90, 140, 140, 110" Margin="0,4" VerticalAlignment="Center">
+                                <Grid ColumnDefinitions="2*, 70, 70, 120, 120, 100" Margin="0,4" VerticalAlignment="Center">
                                     <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Products}"
                                               SelectedValue="{Binding ProductId, Mode=TwoWay}"
                                               DisplayMemberBinding="{Binding Name}"
                                               SelectedValueBinding="{Binding ProductId}"
                                               PlaceholderText="Выберите товар" />
-                                    <TextBox Grid.Column="1" Text="{Binding Quantity, Mode=TwoWay}" TextAlignment="Center"
-                                             Margin="6,0" />
-                                    <TextBox Grid.Column="2" Text="{Binding UnitSalePrice, Mode=TwoWay}"
+                                    <TextBlock Grid.Column="1" Text="{Binding CurrentStock}" TextAlignment="Center" VerticalAlignment="Center" Foreground="#667085" />
+                                    <!-- Цвет текстаQuantityColor меняется на красный, если кол-во > остатка -->
+                                    <TextBox Grid.Column="2" Text="{Binding Quantity, Mode=TwoWay}" TextAlignment="Center" Margin="6,0" Foreground="{Binding QuantityColor}" />
+                                    <TextBox Grid.Column="3" Text="{Binding UnitSalePrice, Mode=TwoWay}"
                                              TextAlignment="Center" Margin="6,0" />
-                                    <TextBlock Grid.Column="3" Text="{Binding UnitCostPrice, StringFormat={}{0:F2}}"
+                                    <TextBlock Grid.Column="4" Text="{Binding UnitCostPrice, StringFormat={}{0:F2}}"
                                                TextAlignment="Center" VerticalAlignment="Center" Foreground="#667085" />
-                                    <TextBlock Grid.Column="4" Text="{Binding Total, StringFormat={}{0:F2} ₽}"
+                                    <TextBlock Grid.Column="5" Text="{Binding Total, StringFormat={}{0:F2} ₽}"
                                                FontWeight="600" TextAlignment="Right" VerticalAlignment="Center"
                                                Foreground="#101828" />
                                 </Grid>
@@ -72,6 +68,7 @@
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#D83B01"
                                FontWeight="500"
+                               TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                Margin="0,8,0,0"
                                IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />

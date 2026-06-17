@@ -14,7 +14,6 @@ public partial class SalesViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<Product> _products = new();
 
     private Sale? _currentSale;
-
     public Sale? CurrentSale
     {
         get => _currentSale;
@@ -39,9 +38,7 @@ public partial class SalesViewModel : ViewModelBase
     }
 
     [ObservableProperty] private ObservableCollection<SaleItemViewModel> _items = new();
-
     public decimal OverallTotal => Items.Sum(i => i.Total);
-
     [ObservableProperty] private string? _errorMessage;
 
     public SalesViewModel() => _ = InitializeAsync();
@@ -65,11 +62,19 @@ public partial class SalesViewModel : ViewModelBase
                 if (product != null)
                 {
                     newItem.ProductName = product.Name;
+                    newItem.CurrentStock = product.StockQuantity;
+                    
+                    // АВТОЗАПОЛНЕНИЕ: Берем актуальную цену продажи из карточки товара
+                    newItem.UnitSalePrice = product.CurrentPrice; 
+                    
+                    // Подтягиваем себестоимость для расчета прибыли
                     var cost = await DatabaseService.Instance.GetLastPurchasePriceAsync(newItem.ProductId);
                     newItem.UnitCostPrice = cost ?? 0m;
                 }
             }
+            OnPropertyChanged(nameof(OverallTotal));
         };
+        
         newItem.PropertyChanged += (_, _) => OnPropertyChanged(nameof(OverallTotal));
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
@@ -96,7 +101,6 @@ public partial class SalesViewModel : ViewModelBase
         }
 
         var db = DatabaseService.Instance;
-
         foreach (var item in Items)
         {
             if (item.ProductId == 0)
@@ -104,20 +108,18 @@ public partial class SalesViewModel : ViewModelBase
                 ErrorMessage = "Для каждой позиции выберите товар.";
                 return;
             }
-
             if (item.Quantity <= 0)
             {
                 ErrorMessage = "Количество товара должно быть больше нуля.";
                 return;
             }
-
             if (item.UnitSalePrice <= 0)
             {
                 ErrorMessage = "Цена продажи должна быть больше нуля.";
                 return;
             }
-
-            // Проверка остатка
+            
+            // Жесткая проверка остатка на уровне БД
             var stock = await db.GetProductStockAsync(item.ProductId);
             if (stock < item.Quantity)
             {

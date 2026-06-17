@@ -12,11 +12,9 @@ namespace Desktop.ViewModels;
 public partial class SuppliesViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Supplier> _suppliers = new();
-
     [ObservableProperty] private ObservableCollection<Product> _products = new();
 
     private Supply? _currentSupply;
-
     public Supply? CurrentSupply
     {
         get => _currentSupply;
@@ -55,9 +53,7 @@ public partial class SuppliesViewModel : ViewModelBase
     }
 
     [ObservableProperty] private ObservableCollection<SupplyItemViewModel> _items = new();
-
     public decimal OverallTotal => Items.Sum(i => i.Total);
-
     [ObservableProperty] private string? _errorMessage;
 
     public SuppliesViewModel() => _ = InitializeAsync();
@@ -74,7 +70,30 @@ public partial class SuppliesViewModel : ViewModelBase
     private void AddItem()
     {
         var newItem = new SupplyItemViewModel();
-        newItem.PropertyChanged += (_, _) => OnPropertyChanged(nameof(OverallTotal));
+        newItem.PropertyChanged += async (s, e) =>
+        {
+            if (e.PropertyName == nameof(SupplyItemViewModel.ProductId) && newItem.ProductId > 0)
+            {
+                var product = Products.FirstOrDefault(p => p.ProductId == newItem.ProductId);
+                if (product != null)
+                {
+                    newItem.ProductName = product.Name;
+                    newItem.CurrentStock = product.StockQuantity;
+                    
+                    // Узнаем, по какой цене мы покупали этот товар в последний раз
+                    var lastPrice = await DatabaseService.Instance.GetLastPurchasePriceAsync(newItem.ProductId);
+                    newItem.LastPurchasePrice = lastPrice ?? 0m;
+                    
+                    // АВТОЗАПОЛНЕНИЕ: Подставляем прошлую цену закупки, чтобы не вводить её вручную
+                    if (newItem.UnitPurchasePrice == 0 && newItem.LastPurchasePrice > 0)
+                    {
+                        newItem.UnitPurchasePrice = newItem.LastPurchasePrice;
+                    }
+                }
+            }
+            OnPropertyChanged(nameof(OverallTotal));
+        };
+        
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
         ErrorMessage = null;
@@ -98,14 +117,12 @@ public partial class SuppliesViewModel : ViewModelBase
             ErrorMessage = "Выберите поставщика.";
             return;
         }
-
         if (Items.Count == 0)
         {
             ErrorMessage = "Добавьте хотя бы одну позицию в поставку.";
             return;
         }
 
-        // 3. Проверка каждой позиции
         foreach (var item in Items)
         {
             if (item.ProductId == 0)
@@ -113,13 +130,11 @@ public partial class SuppliesViewModel : ViewModelBase
                 ErrorMessage = "Для каждой позиции выберите товар.";
                 return;
             }
-
             if (item.Quantity <= 0)
             {
                 ErrorMessage = "Количество товара должно быть больше нуля.";
                 return;
             }
-
             if (item.UnitPurchasePrice <= 0)
             {
                 ErrorMessage = "Цена закупки должна быть больше нуля.";
