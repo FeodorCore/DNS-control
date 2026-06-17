@@ -12,7 +12,7 @@ public class DatabaseService
 {
     private static DatabaseService? _instance;
     private readonly string _connectionString;
-    
+
     public static DatabaseService Instance =>
         _instance ?? throw new InvalidOperationException(
             "DatabaseService не инициализирован. Вызовите Initialize() после успешного подключения.");
@@ -40,51 +40,6 @@ public class DatabaseService
     public static void Initialize(string connectionString)
     {
         _instance = new DatabaseService(connectionString);
-        _ = MigrateAsync();
-    }
-
-    private static async Task MigrateAsync()
-    {
-        try
-        {
-            var cs = _instance!._connectionString;
-            await using var conn = new NpgsqlConnection(cs);
-            await conn.OpenAsync();
-
-            // Миграция для average_cost
-            await using var cmd1 = new NpgsqlCommand(
-                "ALTER TABLE product ADD COLUMN IF NOT EXISTS average_cost DECIMAL(10,2) NOT NULL DEFAULT 0", conn);
-            await cmd1.ExecuteNonQueryAsync();
-
-            await using var cmd2 = new NpgsqlCommand(
-                "UPDATE product SET average_cost = last_purchase_price WHERE average_cost = 0 AND last_purchase_price > 0", conn);
-            await cmd2.ExecuteNonQueryAsync();
-            
-            // Миграция для таблицы customer
-            await using var cmd3 = new NpgsqlCommand(@"
-                CREATE TABLE IF NOT EXISTS customer (
-                    customer_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-                    name        TEXT NOT NULL,
-                    phone       TEXT,
-                    email       TEXT,
-                    discount_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (discount_percent >= 0 AND discount_percent <= 100)
-                );", conn);
-            await cmd3.ExecuteNonQueryAsync();
-
-            // Миграция для customer_id в sale
-            await using var cmd4 = new NpgsqlCommand(
-                "ALTER TABLE sale ADD COLUMN IF NOT EXISTS customer_id INT REFERENCES customer(customer_id)", conn);
-            await cmd4.ExecuteNonQueryAsync();
-            
-            // Индекс для customer_id
-            await using var cmd5 = new NpgsqlCommand(
-                "CREATE INDEX IF NOT EXISTS idx_sale_customer ON sale(customer_id)", conn);
-            await cmd5.ExecuteNonQueryAsync();
-        }
-        catch
-        {
-            // Игнорируем ошибки миграции
-        }
     }
 
     public static async Task<bool> TestConnectionAsync(string connectionString)
@@ -114,7 +69,7 @@ public class DatabaseService
     public Task AddSupplierAsync(Supplier s) => _suppliers.AddAsync(s);
     public Task UpdateSupplierAsync(Supplier s) => _suppliers.UpdateAsync(s);
     public Task DeleteSupplierAsync(int id) => _suppliers.DeleteAsync(id);
-    
+
     // Покупатели
     public Task<List<Customer>> GetCustomersAsync() => _customers.GetAllAsync();
     public Task AddCustomerAsync(Customer c) => _customers.AddAsync(c);
@@ -138,9 +93,9 @@ public class DatabaseService
     // Отчёты
     public Task<List<StockReportRow>> GetStockReportAsync(string categoryName) => _reports.GetStockReportAsync(categoryName);
     public Task<List<SalesByDayReportRow>> GetSalesByDayReportAsync(
-        DateTime dateFrom, DateTime dateTo, string categoryName) 
+        DateTime dateFrom, DateTime dateTo, string categoryName)
         => _reports.GetSalesByDayReportAsync(dateFrom, dateTo, categoryName);
     public Task<List<ProfitByProductReportRow>> GetProfitByProductReportAsync(
-        DateTime dateFrom, DateTime dateTo, string categoryName) 
+        DateTime dateFrom, DateTime dateTo, string categoryName)
         => _reports.GetProfitByProductReportAsync(dateFrom, dateTo, categoryName);
 }

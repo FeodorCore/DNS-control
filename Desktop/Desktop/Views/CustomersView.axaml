@@ -23,7 +23,6 @@
                                  FontSize="14" />
                     </Grid>
                 </Border>
-
                 <!-- Список покупателей -->
                 <ListBox Grid.Row="1"
                          ItemsSource="{Binding Customers}"
@@ -33,14 +32,12 @@
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
             </Grid>
         </Border>
-
         <!-- Правая колонка: форма редактирования -->
         <Border Grid.Column="1" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
                 Padding="24">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование покупателя" />
-                    
                     <StackPanel Spacing="18"
                                 IsEnabled="{Binding SelectedCustomer, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel>
@@ -58,13 +55,7 @@
                             <TextBox Text="{Binding SelectedCustomer.Email, Mode=TwoWay}"
                                      PlaceholderText="email@example.com" />
                         </StackPanel>
-                        <StackPanel>
-                            <TextBlock Classes="Label" Text="Скидка (%)" />
-                            <TextBox Text="{Binding SelectedCustomer.DiscountPercent, Mode=TwoWay}"
-                                     PlaceholderText="0.00" />
-                        </StackPanel>
                     </StackPanel>
-
                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                         <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
                         <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"

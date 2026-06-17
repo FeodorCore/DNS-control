@@ -6,5 +6,4 @@ public class Customer
     public string Name { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? Email { get; set; }
-    public decimal DiscountPercent { get; set; }
 }

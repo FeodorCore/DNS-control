@@ -16,8 +16,7 @@ public class CustomerRepository : BaseRepository
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-            "SELECT customer_id, name, phone, email, discount_percent FROM customer ORDER BY name", conn);
-        
+            "SELECT customer_id, name, phone, email FROM customer ORDER BY name", conn);
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -26,8 +25,7 @@ public class CustomerRepository : BaseRepository
                 CustomerId = reader.GetInt32(0),
                 Name = reader.GetString(1),
                 Phone = reader.IsDBNull(2) ? null : reader.GetString(2),
-                Email = reader.IsDBNull(3) ? null : reader.GetString(3),
-                DiscountPercent = reader.GetDecimal(4)
+                Email = reader.IsDBNull(3) ? null : reader.GetString(3)
             });
         }
         return list;
@@ -38,12 +36,10 @@ public class CustomerRepository : BaseRepository
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-            "INSERT INTO customer (name, phone, email, discount_percent) VALUES (@p1, @p2, @p3, @p4) RETURNING customer_id", conn);
+            "INSERT INTO customer (name, phone, email) VALUES (@p1, @p2, @p3) RETURNING customer_id", conn);
         cmd.Parameters.AddWithValue("p1", customer.Name);
         cmd.Parameters.AddWithValue("p2", (object?)customer.Phone ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", (object?)customer.Email ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("p4", customer.DiscountPercent);
-        
         customer.CustomerId = (int)(await cmd.ExecuteScalarAsync())!;
     }
 
@@ -52,13 +48,11 @@ public class CustomerRepository : BaseRepository
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-            "UPDATE customer SET name = @p1, phone = @p2, email = @p3, discount_percent = @p4 WHERE customer_id = @p5", conn);
+            "UPDATE customer SET name = @p1, phone = @p2, email = @p3 WHERE customer_id = @p4", conn);
         cmd.Parameters.AddWithValue("p1", customer.Name);
         cmd.Parameters.AddWithValue("p2", (object?)customer.Phone ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", (object?)customer.Email ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("p4", customer.DiscountPercent);
-        cmd.Parameters.AddWithValue("p5", customer.CustomerId);
-        
+        cmd.Parameters.AddWithValue("p4", customer.CustomerId);
         await cmd.ExecuteNonQueryAsync();
     }
 
