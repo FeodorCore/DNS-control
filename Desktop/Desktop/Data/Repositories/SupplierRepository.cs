@@ -63,4 +63,15 @@ public class SupplierRepository : BaseRepository
         cmd.Parameters.AddWithValue("p1", id);
         await cmd.ExecuteNonQueryAsync();
     }
+
+    public async Task<bool> HasSuppliesAsync(int supplierId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT COUNT(*) FROM supply WHERE supplier_id = @p1", conn);
+        cmd.Parameters.AddWithValue("p1", supplierId);
+        var count = await cmd.ExecuteScalarAsync();
+        return count is not null and not DBNull && Convert.ToInt64(count) > 0;
+    }
 }

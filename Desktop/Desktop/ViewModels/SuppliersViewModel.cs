@@ -15,6 +15,7 @@ public partial class SuppliersViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<Supplier> _suppliers = new();
     [ObservableProperty] private Supplier? _selectedSupplier;
     [ObservableProperty] private string _searchText = string.Empty;
+    [ObservableProperty] private bool _canDelete = true;
 
     private List<Supplier> _allSuppliers = new();
 
@@ -28,19 +29,26 @@ public partial class SuppliersViewModel : ViewModelBase
 
     partial void OnSearchTextChanged(string value) => ApplyFilter();
 
+    async partial void OnSelectedSupplierChanged(Supplier? value)
+    {
+        if (value is null)
+        {
+            CanDelete = true;
+            return;
+        }
+        CanDelete = !await DatabaseService.Instance.HasSuppliesForSupplierAsync(value.SupplierId);
+    }
+
     private void ApplyFilter()
     {
         var query = SearchText?.Trim() ?? string.Empty;
         IEnumerable<Supplier> filtered = _allSuppliers;
-
         if (!string.IsNullOrEmpty(query))
         {
             filtered = _allSuppliers.Where(s =>
                 s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
-
         Suppliers = new ObservableCollection<Supplier>(filtered);
-
         if (SelectedSupplier != null && !Suppliers.Contains(SelectedSupplier))
             SelectedSupplier = Suppliers.FirstOrDefault();
     }

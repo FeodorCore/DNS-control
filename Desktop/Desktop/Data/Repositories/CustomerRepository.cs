@@ -65,4 +65,15 @@ public class CustomerRepository : BaseRepository
         cmd.Parameters.AddWithValue("p1", id);
         await cmd.ExecuteNonQueryAsync();
     }
+
+    public async Task<bool> HasSalesAsync(int customerId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT COUNT(*) FROM sale WHERE customer_id = @p1", conn);
+        cmd.Parameters.AddWithValue("p1", customerId);
+        var count = await cmd.ExecuteScalarAsync();
+        return count is not null and not DBNull && Convert.ToInt64(count) > 0;
+    }
 }

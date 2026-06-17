@@ -15,7 +15,8 @@ public partial class CustomersViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<Customer> _customers = new();
     [ObservableProperty] private Customer? _selectedCustomer;
     [ObservableProperty] private string _searchText = string.Empty;
-    
+    [ObservableProperty] private bool _canDelete = true;
+
     private List<Customer> _allCustomers = new();
 
     public CustomersViewModel() => _ = LoadAsync();
@@ -28,11 +29,20 @@ public partial class CustomersViewModel : ViewModelBase
 
     partial void OnSearchTextChanged(string value) => ApplyFilter();
 
+    async partial void OnSelectedCustomerChanged(Customer? value)
+    {
+        if (value is null)
+        {
+            CanDelete = true;
+            return;
+        }
+        CanDelete = !await DatabaseService.Instance.HasSalesForCustomerAsync(value.CustomerId);
+    }
+
     private void ApplyFilter()
     {
         var query = SearchText?.Trim() ?? string.Empty;
         IEnumerable<Customer> filtered = _allCustomers;
-
         if (!string.IsNullOrEmpty(query))
         {
             filtered = _allCustomers.Where(c =>
@@ -40,7 +50,6 @@ public partial class CustomersViewModel : ViewModelBase
                 (c.Phone != null && c.Phone.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
                 (c.Email != null && c.Email.Contains(query, StringComparison.OrdinalIgnoreCase)));
         }
-
         Customers = new ObservableCollection<Customer>(filtered);
         if (SelectedCustomer != null && !Customers.Contains(SelectedCustomer))
             SelectedCustomer = Customers.FirstOrDefault();

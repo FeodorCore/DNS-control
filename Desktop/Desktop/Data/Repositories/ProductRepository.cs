@@ -17,10 +17,10 @@ public class ProductRepository : BaseRepository
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             @"SELECT p.product_id, p.name, p.description, p.current_price,
-                     p.last_purchase_price, p.average_cost, p.stock_quantity, p.category_id,
-                     c.name AS category_name
-              FROM product p JOIN category c ON p.category_id = c.category_id
-              ORDER BY p.name", conn);
+                      p.last_purchase_price, p.average_cost, p.stock_quantity, p.category_id,
+                      c.name AS category_name
+               FROM product p JOIN category c ON p.category_id = c.category_id
+               ORDER BY p.name", conn);
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
             list.Add(new Product
@@ -45,7 +45,7 @@ public class ProductRepository : BaseRepository
         await using var cmd = new NpgsqlCommand(
             @"INSERT INTO product (name, description, current_price, last_purchase_price,
                                    average_cost, stock_quantity, category_id)
-              VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7) RETURNING product_id", conn);
+               VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7) RETURNING product_id", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", product.CurrentPrice);
@@ -62,8 +62,8 @@ public class ProductRepository : BaseRepository
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             @"UPDATE product SET name=@p1, description=@p2, current_price=@p3,
-                 last_purchase_price=@p4, average_cost=@p5, stock_quantity=@p6, category_id=@p7
-              WHERE product_id=@p8", conn);
+               last_purchase_price=@p4, average_cost=@p5, stock_quantity=@p6, category_id=@p7
+               WHERE product_id=@p8", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", product.CurrentPrice);
@@ -116,5 +116,27 @@ public class ProductRepository : BaseRepository
         cmd.Parameters.AddWithValue("pid", productId);
         var result = await cmd.ExecuteScalarAsync();
         return result is not null and not DBNull ? (decimal)result : 0m;
+    }
+
+    public async Task<bool> HasSupplyItemsAsync(int productId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT COUNT(*) FROM supply_item WHERE product_id = @p1", conn);
+        cmd.Parameters.AddWithValue("p1", productId);
+        var count = await cmd.ExecuteScalarAsync();
+        return count is not null and not DBNull && Convert.ToInt64(count) > 0;
+    }
+
+    public async Task<bool> HasSaleItemsAsync(int productId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT COUNT(*) FROM sale_item WHERE product_id = @p1", conn);
+        cmd.Parameters.AddWithValue("p1", productId);
+        var count = await cmd.ExecuteScalarAsync();
+        return count is not null and not DBNull && Convert.ToInt64(count) > 0;
     }
 }

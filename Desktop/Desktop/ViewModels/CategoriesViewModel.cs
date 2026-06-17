@@ -15,6 +15,7 @@ public partial class CategoriesViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<Category> _categories = new();
     [ObservableProperty] private Category? _selectedCategory;
     [ObservableProperty] private string _searchText = string.Empty;
+    [ObservableProperty] private bool _canDelete = true;
 
     private List<Category> _allCategories = new();
 
@@ -28,19 +29,26 @@ public partial class CategoriesViewModel : ViewModelBase
 
     partial void OnSearchTextChanged(string value) => ApplyFilter();
 
+    async partial void OnSelectedCategoryChanged(Category? value)
+    {
+        if (value is null)
+        {
+            CanDelete = true;
+            return;
+        }
+        CanDelete = !await DatabaseService.Instance.HasProductsInCategoryAsync(value.CategoryId);
+    }
+
     private void ApplyFilter()
     {
         var query = SearchText?.Trim() ?? string.Empty;
         IEnumerable<Category> filtered = _allCategories;
-
         if (!string.IsNullOrEmpty(query))
         {
             filtered = _allCategories.Where(c =>
                 c.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
-
         Categories = new ObservableCollection<Category>(filtered);
-
         if (SelectedCategory != null && !Categories.Contains(SelectedCategory))
             SelectedCategory = Categories.FirstOrDefault();
     }

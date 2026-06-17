@@ -63,18 +63,21 @@ public class DatabaseService
     public Task AddCategoryAsync(Category c) => _categories.AddAsync(c);
     public Task UpdateCategoryAsync(Category c) => _categories.UpdateAsync(c);
     public Task DeleteCategoryAsync(int id) => _categories.DeleteAsync(id);
+    public Task<bool> HasProductsInCategoryAsync(int categoryId) => _categories.HasProductsAsync(categoryId);
 
     // Поставщики
     public Task<List<Supplier>> GetSuppliersAsync() => _suppliers.GetAllAsync();
     public Task AddSupplierAsync(Supplier s) => _suppliers.AddAsync(s);
     public Task UpdateSupplierAsync(Supplier s) => _suppliers.UpdateAsync(s);
     public Task DeleteSupplierAsync(int id) => _suppliers.DeleteAsync(id);
+    public Task<bool> HasSuppliesForSupplierAsync(int supplierId) => _suppliers.HasSuppliesAsync(supplierId);
 
     // Покупатели
     public Task<List<Customer>> GetCustomersAsync() => _customers.GetAllAsync();
     public Task AddCustomerAsync(Customer c) => _customers.AddAsync(c);
     public Task UpdateCustomerAsync(Customer c) => _customers.UpdateAsync(c);
     public Task DeleteCustomerAsync(int id) => _customers.DeleteAsync(id);
+    public Task<bool> HasSalesForCustomerAsync(int customerId) => _customers.HasSalesAsync(customerId);
 
     // Товары
     public Task<List<Product>> GetProductsAsync() => _products.GetAllAsync();
@@ -83,6 +86,13 @@ public class DatabaseService
     public Task DeleteProductAsync(int id) => _products.DeleteAsync(id);
     public Task<int> GetProductStockAsync(int productId) => _products.GetStockAsync(productId);
     public Task<decimal> GetLastPurchasePriceAsync(int productId) => _products.GetLastPurchasePriceAsync(productId);
+
+    public async Task<bool> HasRelationsForProductAsync(int productId)
+    {
+        var hasSupply = await _products.HasSupplyItemsAsync(productId);
+        var hasSale = await _products.HasSaleItemsAsync(productId);
+        return hasSupply || hasSale;
+    }
 
     // Поставки
     public Task SaveSupplyAsync(Supply supply, List<SupplyItem> items) => _supplies.SaveAsync(supply, items);

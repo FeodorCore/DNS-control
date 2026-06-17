@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Desktop.Models;
@@ -50,5 +51,16 @@ public class CategoryRepository : BaseRepository
             "DELETE FROM category WHERE category_id = @p1", conn);
         cmd.Parameters.AddWithValue("p1", id);
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<bool> HasProductsAsync(int categoryId)
+    {
+        await using var conn = CreateConnection();
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT COUNT(*) FROM product WHERE category_id = @p1", conn);
+        cmd.Parameters.AddWithValue("p1", categoryId);
+        var count = await cmd.ExecuteScalarAsync();
+        return count is not null and not DBNull && Convert.ToInt64(count) > 0;
     }
 }

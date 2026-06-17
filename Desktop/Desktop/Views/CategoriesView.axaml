@@ -51,6 +51,7 @@
                         <Button Content="Сохранить" Command="{Binding SaveCommand}" Classes="Primary"
                                 IsEnabled="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <Button Content="Удалить" Command="{Binding DeleteCommand}" Classes="Danger" Margin="12,0,0,0"
+                                IsVisible="{Binding CanDelete}"
                                 IsEnabled="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     </StackPanel>
                 </StackPanel>
