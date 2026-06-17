@@ -6,7 +6,7 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
-        
+
         <!-- General Button -->
         <Style Selector="Button">
             <Setter Property="Padding" Value="16,10"/>
@@ -29,20 +29,20 @@
             <Setter Property="Opacity" Value="0.5"/>
             <Setter Property="Cursor" Value="Arrow"/>
         </Style>
-        
-        <!-- Primary Button -->
+
+        <!-- Primary Button (Оранжевый) -->
         <Style Selector="Button.Primary">
-            <Setter Property="Background" Value="#7F56D9"/>
+            <Setter Property="Background" Value="#ff9519"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#7F56D9"/>
+            <Setter Property="BorderBrush" Value="#ff9519"/>
         </Style>
         <Style Selector="Button.Primary:hover">
-            <Setter Property="Background" Value="#6941C6"/>
+            <Setter Property="Background" Value="#e68617"/>
         </Style>
         <Style Selector="Button.Primary:pressed">
-            <Setter Property="Background" Value="#53389E"/>
+            <Setter Property="Background" Value="#cc7714"/>
         </Style>
-        
+
         <!-- Success Button -->
         <Style Selector="Button.Success">
             <Setter Property="Background" Value="#12B76A"/>
@@ -52,7 +52,7 @@
         <Style Selector="Button.Success:hover">
             <Setter Property="Background" Value="#039855"/>
         </Style>
-        
+
         <!-- Danger Button -->
         <Style Selector="Button.Danger">
             <Setter Property="Background" Value="#D92D20"/>
@@ -62,7 +62,7 @@
         <Style Selector="Button.Danger:hover">
             <Setter Property="Background" Value="#B42318"/>
         </Style>
-        
+
         <!-- Input Controls -->
         <Style Selector="TextBox, ComboBox, DatePicker">
             <Setter Property="Padding" Value="12,10"/>
@@ -73,13 +73,13 @@
             <Setter Property="Background" Value="#FFFFFF"/>
         </Style>
         <Style Selector="TextBox:focus, ComboBox:focus, DatePicker:focus">
-            <Setter Property="BorderBrush" Value="#7F56D9"/>
+            <Setter Property="BorderBrush" Value="#ff9519"/>
         </Style>
         <Style Selector="TextBox:disabled, ComboBox:disabled, DatePicker:disabled">
             <Setter Property="Background" Value="#F9FAFB"/>
             <Setter Property="Foreground" Value="#667085"/>
         </Style>
-        
+
         <!-- Labels -->
         <Style Selector="TextBlock.Label">
             <Setter Property="FontSize" Value="14"/>
@@ -93,7 +93,7 @@
             <Setter Property="Foreground" Value="#101828"/>
             <Setter Property="Margin" Value="0,0,0,20"/>
         </Style>
-        
+
         <!-- Lists -->
         <Style Selector="ListBox">
             <Setter Property="Background" Value="Transparent"/>
@@ -110,11 +110,11 @@
             <Setter Property="Background" Value="#F9FAFB"/>
         </Style>
         <Style Selector="ListBoxItem:selected">
-            <Setter Property="Background" Value="#F9F5FF"/>
-            <Setter Property="BorderBrush" Value="#7F56D9"/>
+            <Setter Property="Background" Value="#FFF0E0"/>
+            <Setter Property="BorderBrush" Value="#ff9519"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
         </Style>
-        
+
         <!-- DataGrid -->
         <Style Selector="DataGrid">
             <Setter Property="CornerRadius" Value="12"/>
