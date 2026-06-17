@@ -12,8 +12,8 @@ namespace Desktop.ViewModels;
 public partial class SalesViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Product> _products = new();
-
     private Sale? _currentSale;
+    
     public Sale? CurrentSale
     {
         get => _currentSale;
@@ -39,7 +39,9 @@ public partial class SalesViewModel : ViewModelBase
 
     [ObservableProperty] private ObservableCollection<SaleItemViewModel> _items = new();
     public decimal OverallTotal => Items.Sum(i => i.Total);
+    
     [ObservableProperty] private string? _errorMessage;
+    [ObservableProperty] private bool _isProcessing;
 
     public SalesViewModel() => _ = InitializeAsync();
 
@@ -54,6 +56,7 @@ public partial class SalesViewModel : ViewModelBase
     private async Task AddItemAsync()
     {
         var newItem = new SaleItemViewModel();
+        
         newItem.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(SaleItemViewModel.ProductId) && newItem.ProductId > 0)
@@ -62,90 +65,130 @@ public partial class SalesViewModel : ViewModelBase
                 if (product != null)
                 {
                     newItem.ProductName = product.Name;
-                    newItem.CurrentStock = product.StockQuantity;
+                    newItem.MaxStock = product.StockQuantity;
                     
-                    // АВТОЗАПОЛНЕНИЕ: Берем актуальную цену продажи из карточки товара
-                    newItem.UnitSalePrice = product.CurrentPrice; 
-                    
-                    // Подтягиваем себестоимость для расчета прибыли
                     var cost = await DatabaseService.Instance.GetLastPurchasePriceAsync(newItem.ProductId);
                     newItem.UnitCostPrice = cost ?? 0m;
+                    
+                    if (newItem.UnitSalePrice <= 0)
+                        newItem.UnitSalePrice = product.CurrentPrice;
                 }
             }
+            
             OnPropertyChanged(nameof(OverallTotal));
+            ValidateItem(newItem);
         };
         
-        newItem.PropertyChanged += (_, _) => OnPropertyChanged(nameof(OverallTotal));
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
         ErrorMessage = null;
+    }
+
+    private void ValidateItem(SaleItemViewModel item)
+    {
+        if (item.Quantity > item.MaxStock)
+        {
+            ErrorMessage = $"Товар \"{item.ProductName}\": указано {item.Quantity}, доступно {item.MaxStock}";
+        }
+        else
+        {
+            ErrorMessage = null;
+        }
     }
 
     [RelayCommand]
     private void DeleteItem(SaleItemViewModel? item)
     {
         if (item is null) return;
-        item.PropertyChanged -= (_, _) => OnPropertyChanged(nameof(OverallTotal));
         Items.Remove(item);
         OnPropertyChanged(nameof(OverallTotal));
         ErrorMessage = null;
     }
 
+    
     [RelayCommand]
     private async Task SaveSaleAsync()
     {
-        if (Items.Count == 0)
+        if (IsProcessing) return;
+        
+        try
         {
-            ErrorMessage = "Добавьте хотя бы одну позицию в продажу.";
-            return;
-        }
+            IsProcessing = true;
+            ErrorMessage = null;
 
-        var db = DatabaseService.Instance;
-        foreach (var item in Items)
-        {
-            if (item.ProductId == 0)
+            if (Items.Count == 0)
             {
-                ErrorMessage = "Для каждой позиции выберите товар.";
+                ErrorMessage = "Добавьте хотя бы одну позицию в продажу.";
                 return;
             }
-            if (item.Quantity <= 0)
+
+            var db = DatabaseService.Instance;
+
+            foreach (var item in Items)
             {
-                ErrorMessage = "Количество товара должно быть больше нуля.";
-                return;
+                if (item.ProductId == 0)
+                {
+                    ErrorMessage = "Для каждой позиции выберите товар.";
+                    return;
+                }
+
+                if (item.Quantity <= 0)
+                {
+                    ErrorMessage = "Количество товара должно быть больше нуля.";
+                    return;
+                }
+
+                if (item.UnitSalePrice <= 0)
+                {
+                    ErrorMessage = "Цена продажи должна быть больше нуля.";
+                    return;
+                }
+
+                var currentStock = await db.GetProductStockAsync(item.ProductId);
+                if (currentStock < item.Quantity)
+                {
+                    var product = Products.FirstOrDefault(p => p.ProductId == item.ProductId);
+                    ErrorMessage = $"Недостаточно товара \"{product?.Name}\" на складе. Доступно: {currentStock}";
+                    return;
+                }
             }
-            if (item.UnitSalePrice <= 0)
+
+            if (CurrentSale is null) return;
+
+            var itemsToSave = Items.Select(i => new SaleItem
             {
-                ErrorMessage = "Цена продажи должна быть больше нуля.";
-                return;
-            }
+                ProductId = i.ProductId,
+                Quantity = i.Quantity,
+                UnitSalePrice = i.UnitSalePrice,
+                UnitCostPrice = i.UnitCostPrice
+            }).ToList();
+
+            CurrentSale.TotalAmount = OverallTotal;
             
-            // Жесткая проверка остатка на уровне БД
-            var stock = await db.GetProductStockAsync(item.ProductId);
-            if (stock < item.Quantity)
-            {
-                var product = Products.FirstOrDefault(p => p.ProductId == item.ProductId);
-                ErrorMessage = $"Недостаточно товара \"{product?.Name}\" на складе. Доступно: {stock}";
-                return;
-            }
+            await db.SaveSaleAsync(CurrentSale, itemsToSave);
+            
+            await RefreshProductsAsync();
+            
+            Items.Clear();
+            CurrentSale = new Sale { SaleDatetime = DateTime.Now };
+            OnPropertyChanged(nameof(SaleDatetime));
+            OnPropertyChanged(nameof(OverallTotal));
+            
+            ErrorMessage = null;
         }
-
-        if (CurrentSale is null) return;
-
-        var itemsToSave = Items.Select(i => new SaleItem
+        catch (Exception ex)
         {
-            ProductId = i.ProductId,
-            Quantity = i.Quantity,
-            UnitSalePrice = i.UnitSalePrice,
-            UnitCostPrice = i.UnitCostPrice
-        }).ToList();
+            ErrorMessage = $"Ошибка сохранения: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
 
-        CurrentSale.TotalAmount = OverallTotal;
-        await db.SaveSaleAsync(CurrentSale, itemsToSave);
-
-        Items.Clear();
-        CurrentSale = new Sale { SaleDatetime = DateTime.Now };
-        OnPropertyChanged(nameof(SaleDatetime));
-        OnPropertyChanged(nameof(OverallTotal));
-        ErrorMessage = null;
+    private async Task RefreshProductsAsync()
+    {
+        var db = DatabaseService.Instance;
+        Products = new ObservableCollection<Product>(await db.GetProductsAsync());
     }
 }

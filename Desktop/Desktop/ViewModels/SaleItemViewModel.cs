@@ -6,30 +6,33 @@ public partial class SaleItemViewModel : ObservableObject
 {
     [ObservableProperty] private int _productId;
     [ObservableProperty] private string? _productName;
-    [ObservableProperty] private int _currentStock;
     [ObservableProperty] private int _quantity;
     [ObservableProperty] private decimal _unitSalePrice;
     [ObservableProperty] private decimal _unitCostPrice;
-    
-    // Цвет текста для предупреждения о нехватке на складе
-    [ObservableProperty] private string _quantityColor = "#101828";
+    [ObservableProperty] private int _maxStock;
 
     public decimal Total => Quantity * UnitSalePrice;
+    public bool IsValid => Quantity > 0 && Quantity <= MaxStock && UnitSalePrice > 0 && ProductId > 0;
 
     partial void OnQuantityChanged(int value)
     {
         OnPropertyChanged(nameof(Total));
-        UpdateStockWarning();
-    }
-    
-    partial void OnCurrentStockChanged(int value)
-    {
-        UpdateStockWarning();
+        OnPropertyChanged(nameof(IsValid));
     }
 
-    private void UpdateStockWarning()
+    partial void OnUnitSalePriceChanged(decimal value)
     {
-        // Если количество больше остатка - красим в красный (Danger color)
-        QuantityColor = (CurrentStock > 0 && Quantity > CurrentStock) ? "#D83B01" : "#101828";
+        OnPropertyChanged(nameof(Total));
+        OnPropertyChanged(nameof(IsValid));
+    }
+
+    partial void OnProductIdChanged(int value)
+    {
+        OnPropertyChanged(nameof(IsValid));
+    }
+
+    partial void OnMaxStockChanged(int value)
+    {
+        OnPropertyChanged(nameof(IsValid));
     }
 }

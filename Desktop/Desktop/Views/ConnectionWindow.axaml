@@ -16,7 +16,6 @@
     <Border Background="#FFFFFF" CornerRadius="16" Margin="24" Padding="32"
             BorderBrush="#E9ECEF" BorderThickness="1">
         <StackPanel Spacing="16">
-
             <!-- Заголовок -->
             <StackPanel Spacing="4" HorizontalAlignment="Center" Margin="0,0,0,8">
                 <TextBlock Text="🗄️ Подключение к БД"
@@ -30,28 +29,28 @@
             <StackPanel Spacing="14">
                 <StackPanel>
                     <TextBlock Classes="Label" Text="Хост" />
-                    <TextBox Text="{Binding Host, Mode=TwoWay}" Watermark="localhost" />
+                    <TextBox Text="{Binding Host, Mode=TwoWay}" PlaceholderText="localhost" />
                 </StackPanel>
-
+                
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
                     <StackPanel Grid.Column="0">
                         <TextBlock Classes="Label" Text="Порт" />
-                        <TextBox Text="{Binding Port, Mode=TwoWay}" Watermark="5432" />
+                        <TextBox Text="{Binding Port, Mode=TwoWay}" PlaceholderText="5432" />
                     </StackPanel>
                     <StackPanel Grid.Column="1">
                         <TextBlock Classes="Label" Text="База данных" />
-                        <TextBox Text="{Binding Database, Mode=TwoWay}" Watermark="postgres" />
+                        <TextBox Text="{Binding Database, Mode=TwoWay}" PlaceholderText="postgres" />
                     </StackPanel>
                 </Grid>
-
+                
                 <StackPanel>
                     <TextBlock Classes="Label" Text="Имя пользователя" />
-                    <TextBox Text="{Binding Username, Mode=TwoWay}" Watermark="admin" />
+                    <TextBox Text="{Binding Username, Mode=TwoWay}" PlaceholderText="admin" />
                 </StackPanel>
-
+                
                 <StackPanel>
                     <TextBlock Classes="Label" Text="Пароль" />
-                    <TextBox Text="{Binding Password, Mode=TwoWay}" Watermark="Введите пароль" />
+                    <TextBox Text="{Binding Password, Mode=TwoWay}" PlaceholderText="Введите пароль" PasswordChar="•" />
                 </StackPanel>
             </StackPanel>
 
@@ -62,7 +61,7 @@
                            Foreground="#D83B01" FontWeight="500"
                            TextWrapping="Wrap" FontSize="13" />
             </Border>
-
+            
             <Border Background="#ECFDF3" CornerRadius="8" Padding="12"
                     IsVisible="{Binding SuccessMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <TextBlock Text="{Binding SuccessMessage}"
@@ -88,7 +87,6 @@
                         Width="180"
                         IsEnabled="{Binding !IsConnecting}" />
             </StackPanel>
-
         </StackPanel>
     </Border>
 </Window>
