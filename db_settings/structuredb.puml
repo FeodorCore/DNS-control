@@ -1,69 +1,74 @@
 @startuml
-skinparam linetype ortho
+!theme plain
 hide circle
-entity "Supplier" as Supplier {
-  * **supplier_id** : number <<generated>>
+skinparam linetype ortho
+
+entity "category" {
+  *category_id : INT <<PK>>
   --
-  * name : text
-  phone : text
-  email : text
+  name : TEXT
 }
 
-entity "Category" as Category {
-  * **category_id** : number <<generated>>
+entity "supplier" {
+  *supplier_id : INT <<PK>>
   --
-  * name : text
+  name : TEXT
+  phone : TEXT
+  email : TEXT
 }
 
-entity "Product" as Product {
-  * **product_id** : number <<generated>>
+entity "product" {
+  *product_id : INT <<PK>>
   --
-  * name : text
-  description : text
-  * current_price : number
-  * stock_quantity : integer
-  * category_id : number <<FK>>
+  name : TEXT
+  description : TEXT
+  current_price : DECIMAL
+  last_purchase_price : DECIMAL
+  average_cost : DECIMAL
+  stock_quantity : INT
+  *category_id : INT <<FK>>
 }
 
-entity "Supply" as Supply {
-  * **supply_id** : number <<generated>>
+entity "supply" {
+  *supply_id : INT <<PK>>
   --
-  * supplier_id : number <<FK>>
-  * supply_date : date
-  * total_cost : number
+  *supplier_id : INT <<FK>>
+  supply_date : DATE
+  total_cost : DECIMAL
 }
 
-entity "SupplyItem" as SupplyItem {
-  * **supply_item_id** : number <<generated>>
+entity "supply_item" {
+  *supply_item_id : INT <<PK>>
   --
-  * supply_id : number <<FK>>
-  * product_id : number <<FK>>
-  * quantity : integer
-  * unit_purchase_price : number
+  *supply_id : INT <<FK>>
+  *product_id : INT <<FK>>
+  quantity : INT
+  unit_purchase_price : DECIMAL
 }
 
-entity "Sale" as Sale {
-  * **sale_id** : number <<generated>>
+entity "sale" {
+  *sale_id : INT <<PK>>
   --
-  * sale_datetime : datetime
-  * total_amount : number
+  sale_datetime : TIMESTAMP
+  total_amount : DECIMAL
 }
 
-entity "SaleItem" as SaleItem {
-  * **sale_item_id** : number <<generated>>
+entity "sale_item" {
+  *sale_item_id : INT <<PK>>
   --
-  * sale_id : number <<FK>>
-  * product_id : number <<FK>>
-  * quantity : integer
-  * unit_sale_price : number
-  * unit_cost_price : number
+  *sale_id : INT <<FK>>
+  *product_id : INT <<FK>>
+  quantity : INT
+  unit_sale_price : DECIMAL
+  unit_cost_price : DECIMAL
 }
 
-Product }|--|| Category
-Supply }|--|| Supplier
-SupplyItem }|--|| Supply
-SupplyItem }|--|| Product
-SaleItem }|--|| Sale
-SaleItem }|--|| Product
+' Relationships
+category ||--o{ product : "содержит"
+supplier ||--o{ supply : "выполняет"
+supply ||--o{ supply_item : "включает"
+product ||--o{ supply_item : "поставляется в"
+sale ||--o{ sale_item : "включает"
+product ||--o{ sale_item : "продается в"
 
 @enduml
