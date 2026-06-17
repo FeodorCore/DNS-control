@@ -11,24 +11,24 @@
                 <StackPanel Spacing="20">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Новая поставка" FontSize="24" FontWeight="700"
-                                   Foreground="#101828"/>
+                                   Foreground="#101828" />
                         <TextBlock Text="Оформите поступление товаров на склад" FontSize="14"
-                                   Foreground="#667085"/>
+                                   Foreground="#667085" />
                     </StackPanel>
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
                         <StackPanel>
-                            <TextBlock Classes="Label" Text="Дата поставки"/>
+                            <TextBlock Classes="Label" Text="Дата поставки" />
                             <DatePicker SelectedDate="{Binding SupplyDate, Mode=TwoWay}"
-                                        HorizontalAlignment="Stretch"/>
+                                        HorizontalAlignment="Stretch" />
                         </StackPanel>
                         <StackPanel Grid.Column="1">
-                            <TextBlock Classes="Label" Text="Поставщик"/>
+                            <TextBlock Classes="Label" Text="Поставщик" />
                             <ComboBox ItemsSource="{Binding Suppliers}"
                                       SelectedValue="{Binding SupplierId, Mode=TwoWay}"
                                       DisplayMemberBinding="{Binding Name}"
                                       SelectedValueBinding="{Binding SupplierId}"
                                       PlaceholderText="Выберите поставщика"
-                                      HorizontalAlignment="Stretch"/>
+                                      HorizontalAlignment="Stretch" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -40,13 +40,13 @@
                 <StackPanel Spacing="20">
                     <Grid ColumnDefinitions="*, 100, 140, 120" Margin="0,0,0,12">
                         <TextBlock Text="Товар" FontWeight="600" Foreground="#344054"
-                                   FontSize="13"/>
+                                   FontSize="13" />
                         <TextBlock Grid.Column="1" Text="Количество" FontWeight="600"
-                                   Foreground="#344054" FontSize="13" TextAlignment="Center"/>
+                                   Foreground="#344054" FontSize="13" TextAlignment="Center" />
                         <TextBlock Grid.Column="2" Text="Цена закупки" FontWeight="600"
-                                   Foreground="#344054" FontSize="13" TextAlignment="Center"/>
+                                   Foreground="#344054" FontSize="13" TextAlignment="Center" />
                         <TextBlock Grid.Column="3" Text="Сумма" FontWeight="600"
-                                   Foreground="#344054" FontSize="13" TextAlignment="Right"/>
+                                   Foreground="#344054" FontSize="13" TextAlignment="Right" />
                     </Grid>
 
                     <ListBox x:Name="itemsList" ItemsSource="{Binding Items}"
@@ -63,19 +63,19 @@
                                                   DisplayMemberBinding="{Binding Name}"
                                                   SelectedValueBinding="{Binding ProductId}"
                                                   PlaceholderText="Выберите товар"
-                                                  HorizontalAlignment="Stretch"/>
+                                                  HorizontalAlignment="Stretch" />
                                         <TextBox Grid.Column="1"
                                                  Text="{Binding Quantity, Mode=TwoWay}"
                                                  TextAlignment="Center" Margin="8,0"
-                                                 PlaceholderText="0"/>
+                                                 PlaceholderText="0" />
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding UnitPurchasePrice, Mode=TwoWay}"
                                                  TextAlignment="Center" Margin="8,0"
-                                                 PlaceholderText="0.00"/>
+                                                 PlaceholderText="0.00" />
                                         <TextBlock Grid.Column="3"
                                                    Text="{Binding Total, StringFormat={}{0:F2} ₽}"
                                                    FontWeight="700" TextAlignment="Right"
-                                                   VerticalAlignment="Center" Foreground="#101828"/>
+                                                   VerticalAlignment="Center" Foreground="#101828" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -88,10 +88,10 @@
                         <Grid ColumnDefinitions="*, Auto">
                             <TextBlock Text="Итого по поставке:" FontWeight="600"
                                        Foreground="#344054" FontSize="16"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1"
                                        Text="{Binding OverallTotal, StringFormat={}{0:F2} ₽}"
-                                       FontWeight="800" FontSize="28" Foreground="#ff9519"/>
+                                       FontWeight="800" FontSize="28" Foreground="#ff9519" />
                         </Grid>
                     </Border>
 
@@ -99,24 +99,24 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                 Spacing="12" Margin="0,12,0,0">
                         <Button Content="➕ Добавить позицию" Command="{Binding AddItemCommand}"
-                                Classes="Primary" Width="200"/>
+                                Classes="Primary" Width="200" />
                         <Button Content="🗑️ Удалить выбранную"
                                 Command="{Binding DeleteItemCommand}"
                                 CommandParameter="{Binding SelectedItem, ElementName=itemsList}"
-                                Width="200"/>
+                                Width="200" />
                         <Button Content="💾 Сохранить поставку"
                                 Command="{Binding SaveSupplyCommand}" Classes="Success"
-                                Width="200" IsEnabled="{Binding !IsProcessing}"/>
+                                Width="200" IsEnabled="{Binding !IsProcessing}" />
                     </StackPanel>
 
                     <!-- Error Message -->
                     <Border Background="#FEF3F2" CornerRadius="8" Padding="16"
                             IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding ErrorMessage}"
                                        Foreground="#B42318" FontWeight="500"
-                                       TextWrapping="Wrap" FontSize="14"/>
+                                       TextWrapping="Wrap" FontSize="14" />
                         </StackPanel>
                     </Border>
                 </StackPanel>

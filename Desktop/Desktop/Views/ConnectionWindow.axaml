@@ -31,7 +31,7 @@
                     <TextBlock Classes="Label" Text="Хост" />
                     <TextBox Text="{Binding Host, Mode=TwoWay}" PlaceholderText="localhost" />
                 </StackPanel>
-                
+
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
                     <StackPanel Grid.Column="0">
                         <TextBlock Classes="Label" Text="Порт" />
@@ -42,12 +42,12 @@
                         <TextBox Text="{Binding Database, Mode=TwoWay}" PlaceholderText="postgres" />
                     </StackPanel>
                 </Grid>
-                
+
                 <StackPanel>
                     <TextBlock Classes="Label" Text="Имя пользователя" />
                     <TextBox Text="{Binding Username, Mode=TwoWay}" PlaceholderText="admin" />
                 </StackPanel>
-                
+
                 <StackPanel>
                     <TextBlock Classes="Label" Text="Пароль" />
                     <TextBox Text="{Binding Password, Mode=TwoWay}" PlaceholderText="Введите пароль" PasswordChar="•" />
@@ -61,7 +61,7 @@
                            Foreground="#D83B01" FontWeight="500"
                            TextWrapping="Wrap" FontSize="13" />
             </Border>
-            
+
             <Border Background="#ECFDF3" CornerRadius="8" Padding="12"
                     IsVisible="{Binding SuccessMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <TextBlock Text="{Binding SuccessMessage}"
@@ -80,12 +80,14 @@
                 <Button Content="Проверить"
                         Command="{Binding TestConnectionCommand}"
                         Width="150"
-                        IsEnabled="{Binding !IsConnecting}" />
+                        IsEnabled="{Binding !IsConnecting}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
                 <Button Content="Подключиться"
                         Command="{Binding ConnectCommand}"
                         Classes="Primary"
                         Width="180"
-                        IsEnabled="{Binding !IsConnecting}" />
+                        IsEnabled="{Binding !IsConnecting}"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
             </StackPanel>
         </StackPanel>
     </Border>

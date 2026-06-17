@@ -23,7 +23,7 @@
                                  FontSize="14" />
                     </Grid>
                 </Border>
-                
+
                 <!-- Список поставщиков -->
                 <ListBox Grid.Row="1"
                          ItemsSource="{Binding Suppliers}"
@@ -40,20 +40,23 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование поставщика" />
-                    
+
                     <StackPanel Spacing="18"
                                 IsEnabled="{Binding SelectedSupplier, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Название" />
-                            <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}" PlaceholderText="Название компании" />
+                            <TextBox Text="{Binding SelectedSupplier.Name, Mode=TwoWay}"
+                                     PlaceholderText="Название компании" />
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Телефон" />
-                            <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}" PlaceholderText="+375 XX XXX-XX-XX" />
+                            <TextBox Text="{Binding SelectedSupplier.Phone, Mode=TwoWay}"
+                                     PlaceholderText="+375 XX XXX-XX-XX" />
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Email" />
-                            <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}" PlaceholderText="email@example.com" />
+                            <TextBox Text="{Binding SelectedSupplier.Email, Mode=TwoWay}"
+                                     PlaceholderText="email@example.com" />
                         </StackPanel>
                     </StackPanel>
 

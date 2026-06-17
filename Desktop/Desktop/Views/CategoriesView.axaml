@@ -23,7 +23,7 @@
                                  FontSize="14" />
                     </Grid>
                 </Border>
-                
+
                 <!-- Список категорий -->
                 <ListBox Grid.Row="1"
                          ItemsSource="{Binding Categories}"
@@ -40,7 +40,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование категории" />
-                    
+
                     <StackPanel IsEnabled="{Binding SelectedCategory, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <TextBlock Classes="Label" Text="Название категории" />
                         <TextBox Text="{Binding SelectedCategory.Name, Mode=TwoWay}" PlaceholderText="Введите название" />

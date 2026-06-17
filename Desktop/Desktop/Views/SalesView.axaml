@@ -9,12 +9,12 @@
                     BorderBrush="#EAECF0" BorderThickness="1">
                 <Grid ColumnDefinitions="*, Auto" VerticalAlignment="Center">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Новая продажа" FontSize="24" FontWeight="700" Foreground="#101828"/>
-                        <TextBlock Text="Оформите продажу товаров" FontSize="14" Foreground="#667085"/>
+                        <TextBlock Text="Новая продажа" FontSize="24" FontWeight="700" Foreground="#101828" />
+                        <TextBlock Text="Оформите продажу товаров" FontSize="14" Foreground="#667085" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <TextBlock Text="Дата:" FontWeight="600" VerticalAlignment="Center" Foreground="#344054"/>
-                        <DatePicker SelectedDate="{Binding SaleDatetime, Mode=TwoWay}" Width="160"/>
+                        <TextBlock Text="Дата:" FontWeight="600" VerticalAlignment="Center" Foreground="#344054" />
+                        <DatePicker SelectedDate="{Binding SaleDatetime, Mode=TwoWay}" Width="160" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -22,11 +22,15 @@
             <Border Background="#FFFFFF" CornerRadius="16" Padding="32" BorderBrush="#EAECF0" BorderThickness="1">
                 <StackPanel Spacing="20">
                     <Grid ColumnDefinitions="*, 100, 140, 140, 120" Margin="0,0,0,12">
-                        <TextBlock Text="Товар" FontWeight="600" Foreground="#344054" FontSize="13"/>
-                        <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="600" Foreground="#344054" FontSize="13" TextAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Text="Цена продажи" FontWeight="600" Foreground="#344054" FontSize="13" TextAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Text="Себестоимость" FontWeight="600" Foreground="#344054" FontSize="13" TextAlignment="Center"/>
-                        <TextBlock Grid.Column="4" Text="Сумма" FontWeight="600" Foreground="#344054" FontSize="13" TextAlignment="Right"/>
+                        <TextBlock Text="Товар" FontWeight="600" Foreground="#344054" FontSize="13" />
+                        <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="600" Foreground="#344054" FontSize="13"
+                                   TextAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="Цена продажи" FontWeight="600" Foreground="#344054"
+                                   FontSize="13" TextAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="Себестоимость" FontWeight="600" Foreground="#344054"
+                                   FontSize="13" TextAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="Сумма" FontWeight="600" Foreground="#344054" FontSize="13"
+                                   TextAlignment="Right" />
                     </Grid>
 
                     <ListBox x:Name="itemsList" ItemsSource="{Binding Items}" BorderThickness="0"
@@ -40,15 +44,18 @@
                                                   SelectedValue="{Binding ProductId, Mode=TwoWay}"
                                                   DisplayMemberBinding="{Binding Name}"
                                                   SelectedValueBinding="{Binding ProductId}"
-                                                  PlaceholderText="Выберите товар" HorizontalAlignment="Stretch"/>
+                                                  PlaceholderText="Выберите товар" HorizontalAlignment="Stretch" />
                                         <TextBox Grid.Column="1" Text="{Binding Quantity, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0"/>
+                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0" />
                                         <TextBox Grid.Column="2" Text="{Binding UnitSalePrice, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0.00"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding UnitCostPrice, StringFormat={}{0:F2}}"
-                                                   TextAlignment="Center" VerticalAlignment="Center" Foreground="#667085"/>
+                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0.00" />
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding UnitCostPrice, StringFormat={}{0:F2}}"
+                                                   TextAlignment="Center" VerticalAlignment="Center"
+                                                   Foreground="#667085" />
                                         <TextBlock Grid.Column="4" Text="{Binding Total, StringFormat={}{0:F2} ₽}"
-                                                   FontWeight="700" TextAlignment="Right" VerticalAlignment="Center" Foreground="#101828"/>
+                                                   FontWeight="700" TextAlignment="Right" VerticalAlignment="Center"
+                                                   Foreground="#101828" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -57,25 +64,28 @@
 
                     <Border Background="#FFF0E0" CornerRadius="12" Padding="24" Margin="0,8,0,0">
                         <Grid ColumnDefinitions="*, Auto">
-                            <TextBlock Text="Итого по чеку:" FontWeight="600" Foreground="#344054" FontSize="16" VerticalAlignment="Center"/>
+                            <TextBlock Text="Итого по чеку:" FontWeight="600" Foreground="#344054" FontSize="16"
+                                       VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" Text="{Binding OverallTotal, StringFormat={}{0:F2} ₽}"
-                                       FontWeight="800" FontSize="28" Foreground="#ff9519"/>
+                                       FontWeight="800" FontSize="28" Foreground="#ff9519" />
                         </Grid>
                     </Border>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
-                        <Button Content="➕ Добавить позицию" Command="{Binding AddItemCommand}" Classes="Primary" Width="200"/>
+                        <Button Content="➕ Добавить позицию" Command="{Binding AddItemCommand}" Classes="Primary"
+                                Width="200" />
                         <Button Content="🗑️ Удалить выбранную" Command="{Binding DeleteItemCommand}"
-                                CommandParameter="{Binding SelectedItem, ElementName=itemsList}" Width="200"/>
+                                CommandParameter="{Binding SelectedItem, ElementName=itemsList}" Width="200" />
                         <Button Content="💾 Сохранить продажу" Command="{Binding SaveSaleCommand}" Classes="Success"
-                                Width="200" IsEnabled="{Binding !IsProcessing}"/>
+                                Width="200" IsEnabled="{Binding !IsProcessing}" />
                     </StackPanel>
 
                     <Border Background="#FEF3F2" CornerRadius="8" Padding="16"
                             IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" FontWeight="500" TextWrapping="Wrap" FontSize="14"/>
+                            <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" FontWeight="500"
+                                       TextWrapping="Wrap" FontSize="14" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
