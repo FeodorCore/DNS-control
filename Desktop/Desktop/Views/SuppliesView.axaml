@@ -38,6 +38,7 @@
             <Border Background="#FFFFFF" CornerRadius="16" Padding="32"
                     BorderBrush="#EAECF0" BorderThickness="1">
                 <StackPanel Spacing="20">
+                    <!-- Заголовки колонок с Padding для выравнивания с элементами -->
                     <Grid ColumnDefinitions="*, 100, 140, 120" Margin="0,0,0,12">
                         <TextBlock Text="Товар" FontWeight="600" Foreground="#344054"
                                    FontSize="13" />
@@ -48,10 +49,12 @@
                         <TextBlock Grid.Column="3" Text="Сумма" FontWeight="600"
                                    Foreground="#344054" FontSize="13" TextAlignment="Right" />
                     </Grid>
-
+                    
+                    <!-- ListBox с ограниченной высотой для скролбара -->
                     <ListBox x:Name="itemsList" ItemsSource="{Binding Items}"
                              BorderThickness="0" Background="#F9FAFB"
-                             CornerRadius="12" MinHeight="200">
+                             CornerRadius="12" MaxHeight="400"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="vm:SupplyItemViewModel">
                                 <Border Background="#FFFFFF" CornerRadius="8" Padding="16"
@@ -66,11 +69,11 @@
                                                   HorizontalAlignment="Stretch" />
                                         <TextBox Grid.Column="1"
                                                  Text="{Binding Quantity, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0"
+                                                 TextAlignment="Center"
                                                  PlaceholderText="0" />
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding UnitPurchasePrice, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0"
+                                                 TextAlignment="Center"
                                                  PlaceholderText="0.00" />
                                         <TextBlock Grid.Column="3"
                                                    Text="{Binding Total, StringFormat={}{0:F2} ₽}"

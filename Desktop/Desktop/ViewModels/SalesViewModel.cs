@@ -67,7 +67,7 @@ public partial class SalesViewModel : ViewModelBase
         
         // Добавляем "Разовый покупатель" (ID = 0) в начало списка для удобства
         var customers = await db.GetCustomersAsync();
-        var dummyCustomer = new Customer { CustomerId = 0, Name = "Разовый покупатель (без карты)" };
+        var dummyCustomer = new Customer { CustomerId = 0, Name = "Разовый покупатель" };
         Customers = new ObservableCollection<Customer>(new[] { dummyCustomer }.Concat(customers));
         
         CurrentSale = new Sale { SaleDatetime = DateTime.Now, CustomerId = 0 };

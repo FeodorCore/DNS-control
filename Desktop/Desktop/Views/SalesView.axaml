@@ -29,9 +29,9 @@
                     </StackPanel>
                 </Grid>
             </Border>
-
             <Border Background="#FFFFFF" CornerRadius="16" Padding="32" BorderBrush="#EAECF0" BorderThickness="1">
                 <StackPanel Spacing="20">
+                    <!-- Заголовки колонок с Padding для выравнивания с элементами -->
                     <Grid ColumnDefinitions="*, 100, 140, 140, 120" Margin="0,0,0,12">
                         <TextBlock Text="Товар" FontWeight="600" Foreground="#344054" FontSize="13" />
                         <TextBlock Grid.Column="1" Text="Кол-во" FontWeight="600" Foreground="#344054" FontSize="13"
@@ -43,9 +43,11 @@
                         <TextBlock Grid.Column="4" Text="Сумма" FontWeight="600" Foreground="#344054" FontSize="13"
                                    TextAlignment="Right" />
                     </Grid>
-
+                    
+                    <!-- ListBox с ограниченной высотой для скролбара -->
                     <ListBox x:Name="itemsList" ItemsSource="{Binding Items}" BorderThickness="0"
-                             Background="#F9FAFB" CornerRadius="12" MinHeight="200">
+                             Background="#F9FAFB" CornerRadius="12" MaxHeight="400"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="vm:SaleItemViewModel">
                                 <Border Background="#FFFFFF" CornerRadius="8" Padding="16" Margin="0,4"
@@ -57,9 +59,9 @@
                                                   SelectedValueBinding="{Binding ProductId}"
                                                   PlaceholderText="Выберите товар" HorizontalAlignment="Stretch" />
                                         <TextBox Grid.Column="1" Text="{Binding Quantity, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0" />
+                                                 TextAlignment="Center" PlaceholderText="0" />
                                         <TextBox Grid.Column="2" Text="{Binding UnitSalePrice, Mode=TwoWay}"
-                                                 TextAlignment="Center" Margin="8,0" PlaceholderText="0.00" />
+                                                 TextAlignment="Center" PlaceholderText="0.00" />
                                         <TextBlock Grid.Column="3"
                                                    Text="{Binding UnitCostPrice, StringFormat={}{0:F2}}"
                                                    TextAlignment="Center" VerticalAlignment="Center"
@@ -72,7 +74,6 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-
                     <Border Background="#FFF0E0" CornerRadius="12" Padding="24" Margin="0,8,0,0">
                         <Grid ColumnDefinitions="*, Auto">
                             <TextBlock Text="Итого по чеку:" FontWeight="600" Foreground="#344054" FontSize="16"
@@ -81,7 +82,6 @@
                                        FontWeight="800" FontSize="28" Foreground="#ff9519" />
                         </Grid>
                     </Border>
-
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12" Margin="0,12,0,0">
                         <Button Content="➕ Добавить позицию" Command="{Binding AddItemCommand}" Classes="Primary"
                                 Width="200" />
@@ -90,7 +90,6 @@
                         <Button Content="💾 Сохранить продажу" Command="{Binding SaveSaleCommand}" Classes="Success"
                                 Width="200" IsEnabled="{Binding !IsProcessing}" />
                     </StackPanel>
-
                     <Border Background="#FEF3F2" CornerRadius="8" Padding="16"
                             IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
