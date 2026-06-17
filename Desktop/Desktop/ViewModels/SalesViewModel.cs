@@ -56,8 +56,7 @@ public partial class SalesViewModel : ViewModelBase
     private async Task AddItemAsync()
     {
         var newItem = new SaleItemViewModel();
-        
-        newItem.PropertyChanged += async (s, e) =>
+        newItem.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SaleItemViewModel.ProductId) && newItem.ProductId > 0)
             {
@@ -66,19 +65,14 @@ public partial class SalesViewModel : ViewModelBase
                 {
                     newItem.ProductName = product.Name;
                     newItem.MaxStock = product.StockQuantity;
-                    
-                    var cost = await DatabaseService.Instance.GetLastPurchasePriceAsync(newItem.ProductId);
-                    newItem.UnitCostPrice = cost ?? 0m;
-                    
+                    newItem.UnitCostPrice = product.LastPurchasePrice; // всегда актуальная себестоимость
                     if (newItem.UnitSalePrice <= 0)
                         newItem.UnitSalePrice = product.CurrentPrice;
                 }
             }
-            
             OnPropertyChanged(nameof(OverallTotal));
             ValidateItem(newItem);
         };
-        
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
         ErrorMessage = null;
@@ -87,13 +81,9 @@ public partial class SalesViewModel : ViewModelBase
     private void ValidateItem(SaleItemViewModel item)
     {
         if (item.Quantity > item.MaxStock)
-        {
             ErrorMessage = $"Товар \"{item.ProductName}\": указано {item.Quantity}, доступно {item.MaxStock}";
-        }
         else
-        {
             ErrorMessage = null;
-        }
     }
 
     [RelayCommand]
@@ -105,17 +95,16 @@ public partial class SalesViewModel : ViewModelBase
         ErrorMessage = null;
     }
 
-    
     [RelayCommand]
     private async Task SaveSaleAsync()
     {
         if (IsProcessing) return;
-        
+
+        IsProcessing = true;
+        ErrorMessage = null;
+
         try
         {
-            IsProcessing = true;
-            ErrorMessage = null;
-
             if (Items.Count == 0)
             {
                 ErrorMessage = "Добавьте хотя бы одну позицию в продажу.";
@@ -124,6 +113,7 @@ public partial class SalesViewModel : ViewModelBase
 
             var db = DatabaseService.Instance;
 
+            // Проверка обязательных полей в каждой позиции
             foreach (var item in Items)
             {
                 if (item.ProductId == 0)
@@ -131,24 +121,29 @@ public partial class SalesViewModel : ViewModelBase
                     ErrorMessage = "Для каждой позиции выберите товар.";
                     return;
                 }
-
                 if (item.Quantity <= 0)
                 {
                     ErrorMessage = "Количество товара должно быть больше нуля.";
                     return;
                 }
-
                 if (item.UnitSalePrice <= 0)
                 {
                     ErrorMessage = "Цена продажи должна быть больше нуля.";
                     return;
                 }
+            }
 
-                var currentStock = await db.GetProductStockAsync(item.ProductId);
-                if (currentStock < item.Quantity)
+            // Группируем позиции по товару и проверяем суммарный остаток
+            var grouped = Items.GroupBy(i => i.ProductId);
+            foreach (var group in grouped)
+            {
+                var totalQty = group.Sum(i => i.Quantity);
+                var stock = await db.GetProductStockAsync(group.Key);
+                if (stock < totalQty)
                 {
-                    var product = Products.FirstOrDefault(p => p.ProductId == item.ProductId);
-                    ErrorMessage = $"Недостаточно товара \"{product?.Name}\" на складе. Доступно: {currentStock}";
+                    var product = Products.FirstOrDefault(p => p.ProductId == group.Key);
+                    ErrorMessage = $"Недостаточно товара \"{product?.Name}\" на складе. " +
+                                   $"Требуется {totalQty} шт., доступно {stock} шт.";
                     return;
                 }
             }
@@ -164,17 +159,14 @@ public partial class SalesViewModel : ViewModelBase
             }).ToList();
 
             CurrentSale.TotalAmount = OverallTotal;
-            
             await db.SaveSaleAsync(CurrentSale, itemsToSave);
-            
             await RefreshProductsAsync();
-            
+
+            // Сброс для следующего чека
             Items.Clear();
             CurrentSale = new Sale { SaleDatetime = DateTime.Now };
             OnPropertyChanged(nameof(SaleDatetime));
             OnPropertyChanged(nameof(OverallTotal));
-            
-            ErrorMessage = null;
         }
         catch (Exception ex)
         {

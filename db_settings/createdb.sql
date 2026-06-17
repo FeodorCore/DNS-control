@@ -16,12 +16,13 @@ CREATE TABLE IF NOT EXISTS supplier (
 
 -- Таблица товаров
 CREATE TABLE IF NOT EXISTS product (
-    product_id      INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name            TEXT           NOT NULL,
-    description     TEXT,
-    current_price   DECIMAL(10,2) NOT NULL CHECK (current_price >= 0),
-    stock_quantity  INT           NOT NULL CHECK (stock_quantity >= 0),
-    category_id     INT           NOT NULL REFERENCES category(category_id)
+    product_id        INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name              TEXT           NOT NULL,
+    description       TEXT,
+    current_price     DECIMAL(10,2) NOT NULL CHECK (current_price >= 0),
+    last_purchase_price DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (last_purchase_price >= 0),
+    stock_quantity    INT           NOT NULL CHECK (stock_quantity >= 0),
+    category_id       INT           NOT NULL REFERENCES category(category_id)
 );
 
 -- Таблица поставок (заголовок)
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS sale_item (
     unit_cost_price DECIMAL(10,2) NOT NULL CHECK (unit_cost_price >= 0)
 );
 
--- Индексы для ускорения соединений по внешним ключам
+-- Индексы
 CREATE INDEX IF NOT EXISTS idx_product_category ON product(category_id);
 CREATE INDEX IF NOT EXISTS idx_supply_supplier ON supply(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_supply_item_supply ON supply_item(supply_id);

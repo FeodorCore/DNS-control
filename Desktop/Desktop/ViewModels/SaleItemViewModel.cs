@@ -19,20 +19,11 @@ public partial class SaleItemViewModel : ObservableObject
         OnPropertyChanged(nameof(Total));
         OnPropertyChanged(nameof(IsValid));
     }
-
     partial void OnUnitSalePriceChanged(decimal value)
     {
         OnPropertyChanged(nameof(Total));
         OnPropertyChanged(nameof(IsValid));
     }
-
-    partial void OnProductIdChanged(int value)
-    {
-        OnPropertyChanged(nameof(IsValid));
-    }
-
-    partial void OnMaxStockChanged(int value)
-    {
-        OnPropertyChanged(nameof(IsValid));
-    }
+    partial void OnProductIdChanged(int value) => OnPropertyChanged(nameof(IsValid));
+    partial void OnMaxStockChanged(int value) => OnPropertyChanged(nameof(IsValid));
 }

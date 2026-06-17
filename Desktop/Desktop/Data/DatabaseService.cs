@@ -34,17 +34,11 @@ public class DatabaseService
         _reports = new ReportRepository(connectionString);
     }
 
-    /// <summary>
-    /// Инициализация сервиса после успешного подключения.
-    /// </summary>
     public static void Initialize(string connectionString)
     {
         _instance = new DatabaseService(connectionString);
     }
 
-    /// <summary>
-    /// Проверка подключения к БД.
-    /// </summary>
     public static async Task<bool> TestConnectionAsync(string connectionString)
     {
         try
@@ -60,8 +54,6 @@ public class DatabaseService
             return false;
         }
     }
-
-    // ===== Делегирование к репозиториям (API для ViewModel не изменился) =====
 
     // Категории
     public Task<List<Category>> GetCategoriesAsync() => _categories.GetAllAsync();
@@ -81,7 +73,7 @@ public class DatabaseService
     public Task UpdateProductAsync(Product p) => _products.UpdateAsync(p);
     public Task DeleteProductAsync(int id) => _products.DeleteAsync(id);
     public Task<int> GetProductStockAsync(int productId) => _products.GetStockAsync(productId);
-    public Task<decimal?> GetLastPurchasePriceAsync(int productId) => _products.GetLastPurchasePriceAsync(productId);
+    public Task<decimal> GetLastPurchasePriceAsync(int productId) => _products.GetLastPurchasePriceAsync(productId);
 
     // Поставки
     public Task SaveSupplyAsync(Supply supply, List<SupplyItem> items) => _supplies.SaveAsync(supply, items);

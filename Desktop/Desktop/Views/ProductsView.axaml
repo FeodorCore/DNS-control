@@ -5,40 +5,29 @@
              x:Class="Desktop.Views.ProductsView"
              x:DataType="vm:ProductsViewModel">
     <Grid ColumnDefinitions="340, *" ColumnSpacing="24">
-        <!-- Левая колонка: поиск + список товаров -->
-        <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
-                Padding="16">
+        <Border Grid.Column="0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="16">
             <Grid RowDefinitions="Auto, *">
-                <!-- Поисковая строка -->
                 <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="8" BorderBrush="#E9ECEF" BorderThickness="1"
                         Padding="10,4" Margin="0,0,0,12">
                     <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-                        <TextBlock Grid.Column="0" Text="🔍" FontSize="14"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#98A2B3" />
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding SearchText, Mode=TwoWay}"
-                                 PlaceholderText="Поиск по названию..."
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Padding="4,4"
-                                 FontSize="14" />
+                        <TextBlock Grid.Column="0" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#98A2B3" />
+                        <TextBox Grid.Column="1" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Поиск по названию..."
+                                 BorderThickness="0" Background="Transparent" Padding="4,4" FontSize="14" />
                     </Grid>
                 </Border>
-                
-                <!-- Список товаров -->
-                <ListBox Grid.Row="1"
-                         ItemsSource="{Binding Products}"
-                         SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="models:Product">
                             <StackPanel>
                                 <TextBlock Text="{Binding Name}" FontWeight="600" FontSize="15" Foreground="#101828" />
-                                <TextBlock Text="{Binding CategoryName}" FontSize="13" Foreground="#667085"
-                                           Margin="0,2,0,0" />
-                                <TextBlock Text="{Binding CurrentPrice, StringFormat={}{0:F2} ₽}" FontSize="14"
-                                           Foreground="#107C10" FontWeight="500" Margin="0,6,0,0" />
+                                <TextBlock Text="{Binding CategoryName}" FontSize="13" Foreground="#667085" Margin="0,2,0,0" />
+                                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,6,0,0">
+                                    <TextBlock Text="{Binding CurrentPrice, StringFormat={}{0:F2} ₽}" FontSize="14"
+                                               Foreground="#107C10" FontWeight="500"/>
+                                    <TextBlock Text="{Binding LastPurchasePrice, StringFormat='закуп: {0:F2} ₽'}"
+                                               FontSize="13" Foreground="#667085"/>
+                                </StackPanel>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -46,26 +35,20 @@
             </Grid>
         </Border>
 
-        <!-- Правая колонка: форма редактирования -->
-        <Border Grid.Column="1" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1"
-                Padding="24">
+        <Border Grid.Column="1" Background="#FFFFFF" CornerRadius="12" BorderBrush="#E9ECEF" BorderThickness="1" Padding="24">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование товара" />
-                    
-                    <StackPanel Spacing="18"
-                                IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Spacing="18" IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Название" />
                             <TextBox Text="{Binding SelectedProduct.Name, Mode=TwoWay}" PlaceholderText="Введите название" />
                         </StackPanel>
-                        
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Описание" />
                             <TextBox Text="{Binding SelectedProduct.Description, Mode=TwoWay}" PlaceholderText="Краткое описание"
                                      AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
                         </StackPanel>
-                        
                         <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
                             <StackPanel Grid.Column="0">
                                 <TextBlock Classes="Label" Text="Цена продажи" />
@@ -76,7 +59,10 @@
                                 <TextBox Text="{Binding SelectedProduct.StockQuantity, Mode=TwoWay}" IsReadOnly="True" />
                             </StackPanel>
                         </Grid>
-                        
+                        <StackPanel>
+                            <TextBlock Classes="Label" Text="Последняя цена закупки" />
+                            <TextBox Text="{Binding SelectedProduct.LastPurchasePrice, Mode=OneWay}" IsReadOnly="True" />
+                        </StackPanel>
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Категория" />
                             <ComboBox ItemsSource="{Binding Categories}"

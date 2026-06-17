@@ -69,10 +69,23 @@ public partial class SuppliesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void AddItem()
+    private async Task AddItemAsync()
     {
         var newItem = new SupplyItemViewModel();
-        newItem.PropertyChanged += (_, _) => OnPropertyChanged(nameof(OverallTotal));
+        newItem.PropertyChanged += async (s, e) =>
+        {
+            if (e.PropertyName == nameof(SupplyItemViewModel.ProductId) && newItem.ProductId > 0)
+            {
+                var product = Products.FirstOrDefault(p => p.ProductId == newItem.ProductId);
+                if (product != null)
+                {
+                    newItem.ProductName = product.Name;
+                    if (newItem.UnitPurchasePrice == 0)
+                        newItem.UnitPurchasePrice = product.LastPurchasePrice;
+                }
+            }
+            OnPropertyChanged(nameof(OverallTotal));
+        };
         Items.Add(newItem);
         OnPropertyChanged(nameof(OverallTotal));
         ErrorMessage = null;
@@ -102,13 +115,11 @@ public partial class SuppliesViewModel : ViewModelBase
                 ErrorMessage = "Выберите поставщика.";
                 return;
             }
-
             if (Items.Count == 0)
             {
                 ErrorMessage = "Добавьте хотя бы одну позицию в поставку.";
                 return;
             }
-
             foreach (var item in Items)
             {
                 if (item.ProductId == 0)
@@ -116,13 +127,11 @@ public partial class SuppliesViewModel : ViewModelBase
                     ErrorMessage = "Для каждой позиции выберите товар.";
                     return;
                 }
-
                 if (item.Quantity <= 0)
                 {
                     ErrorMessage = "Количество товара должно быть больше нуля.";
                     return;
                 }
-
                 if (item.UnitPurchasePrice <= 0)
                 {
                     ErrorMessage = "Цена закупки должна быть больше нуля.";
@@ -141,9 +150,7 @@ public partial class SuppliesViewModel : ViewModelBase
             }).ToList();
 
             CurrentSupply.TotalCost = OverallTotal;
-            
             await db.SaveSupplyAsync(CurrentSupply, itemsToSave);
-            
             await RefreshProductsAsync();
             
             Items.Clear();
@@ -151,7 +158,6 @@ public partial class SuppliesViewModel : ViewModelBase
             OnPropertyChanged(nameof(SupplyDate));
             OnPropertyChanged(nameof(SupplierId));
             OnPropertyChanged(nameof(OverallTotal));
-            
             ErrorMessage = null;
         }
         catch (Exception ex)
