@@ -45,12 +45,22 @@ public class SaleRepository : BaseRepository
                 await delCmd.ExecuteNonQueryAsync();
             }
 
-            // Гарантируем, что ID продажи корректен
             if (sale.SaleId <= 0)
                 throw new InvalidOperationException("ID продажи не был установлен перед вставкой позиций.");
 
             foreach (var item in items)
             {
+                // Получаем актуальную среднюю себестоимость на данный момент
+                await using var costCmd = new NpgsqlCommand(
+                    "SELECT average_cost FROM product WHERE product_id = @pid", conn, tx);
+                costCmd.Parameters.AddWithValue("pid", item.ProductId);
+                var costResult = await costCmd.ExecuteScalarAsync();
+                decimal actualCost = costResult is not null and not DBNull ? (decimal)costResult : 0m;
+                
+                // Переопределяем себестоимость для точности
+                item.UnitCostPrice = actualCost;
+
+                // Вставляем позицию продажи
                 await using var cmd = new NpgsqlCommand(
                     "INSERT INTO sale_item (sale_id, product_id, quantity, unit_sale_price, unit_cost_price) VALUES (@p1, @p2, @p3, @p4, @p5)",
                     conn, tx);
@@ -61,6 +71,7 @@ public class SaleRepository : BaseRepository
                 cmd.Parameters.AddWithValue("p5", item.UnitCostPrice);
                 await cmd.ExecuteNonQueryAsync();
 
+                // Списываем остаток (средняя себестоимость не меняется при продаже)
                 await using var upd = new NpgsqlCommand(
                     "UPDATE product SET stock_quantity = stock_quantity - @q WHERE product_id = @pid", conn, tx);
                 upd.Parameters.AddWithValue("q", item.Quantity);

@@ -11,12 +11,12 @@ namespace Desktop.Data;
 public class DatabaseService
 {
     private static DatabaseService? _instance;
+    private readonly string _connectionString; // <-- сохраняем строку подключения
 
     public static DatabaseService Instance =>
         _instance ?? throw new InvalidOperationException(
             "DatabaseService не инициализирован. Вызовите Initialize() после успешного подключения.");
 
-    // Репозитории
     private readonly CategoryRepository _categories;
     private readonly SupplierRepository _suppliers;
     private readonly ProductRepository _products;
@@ -26,6 +26,7 @@ public class DatabaseService
 
     private DatabaseService(string connectionString)
     {
+        _connectionString = connectionString; // <-- сохраняем
         _categories = new CategoryRepository(connectionString);
         _suppliers = new SupplierRepository(connectionString);
         _products = new ProductRepository(connectionString);
@@ -37,6 +38,33 @@ public class DatabaseService
     public static void Initialize(string connectionString)
     {
         _instance = new DatabaseService(connectionString);
+        _ = MigrateAsync();
+    }
+
+    private static async Task MigrateAsync()
+    {
+        try
+        {
+            // Используем сохранённую строку подключения из экземпляра
+            var cs = _instance!._connectionString;
+            await using var conn = new NpgsqlConnection(cs);
+            await conn.OpenAsync();
+            // Добавляем столбец average_cost, если его ещё нет
+            await using var cmd = new NpgsqlCommand(
+                "ALTER TABLE product ADD COLUMN IF NOT EXISTS average_cost DECIMAL(10,2) NOT NULL DEFAULT 0",
+                conn);
+            await cmd.ExecuteNonQueryAsync();
+
+            // Инициализируем average_cost у существующих товаров на основе последней цены закупки, если average_cost = 0
+            await using var updateCmd = new NpgsqlCommand(
+                "UPDATE product SET average_cost = last_purchase_price WHERE average_cost = 0 AND last_purchase_price > 0",
+                conn);
+            await updateCmd.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            // Игнорируем ошибки миграции (например, если БД недоступна)
+        }
     }
 
     public static async Task<bool> TestConnectionAsync(string connectionString)

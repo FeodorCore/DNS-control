@@ -48,29 +48,57 @@ public class SupplyRepository : BaseRepository
 
             foreach (var item in items)
             {
-                await using var cmd = new NpgsqlCommand(
+                // Получаем текущие остаток и среднюю себестоимость (блокируем строку)
+                await using var getCmd = new NpgsqlCommand(
+                    "SELECT stock_quantity, average_cost FROM product WHERE product_id = @pid FOR UPDATE",
+                    conn, tx);
+                getCmd.Parameters.AddWithValue("pid", item.ProductId);
+                using var reader = await getCmd.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                    throw new Exception($"Товар с ID {item.ProductId} не найден.");
+
+                int currentStock = reader.GetInt32(0);
+                decimal currentAvg = reader.GetDecimal(1);
+                reader.Close();
+
+                // Вычисляем новую среднюю себестоимость
+                int newStock = currentStock + item.Quantity;
+                decimal newAvg;
+                if (newStock == 0)
+                {
+                    newAvg = 0; // не должно случиться, но предохраняемся
+                }
+                else
+                {
+                    newAvg = Math.Round(
+                        ((currentStock * currentAvg) + (item.Quantity * item.UnitPurchasePrice)) / newStock,
+                        2,
+                        MidpointRounding.AwayFromZero);
+                }
+
+                // Вставка позиции поставки
+                await using var insertItemCmd = new NpgsqlCommand(
                     "INSERT INTO supply_item (supply_id, product_id, quantity, unit_purchase_price) VALUES (@p1, @p2, @p3, @p4)",
                     conn, tx);
-                cmd.Parameters.AddWithValue("p1", supply.SupplyId);
-                cmd.Parameters.AddWithValue("p2", item.ProductId);
-                cmd.Parameters.AddWithValue("p3", item.Quantity);
-                cmd.Parameters.AddWithValue("p4", item.UnitPurchasePrice);
-                await cmd.ExecuteNonQueryAsync();
+                insertItemCmd.Parameters.AddWithValue("p1", supply.SupplyId);
+                insertItemCmd.Parameters.AddWithValue("p2", item.ProductId);
+                insertItemCmd.Parameters.AddWithValue("p3", item.Quantity);
+                insertItemCmd.Parameters.AddWithValue("p4", item.UnitPurchasePrice);
+                await insertItemCmd.ExecuteNonQueryAsync();
 
-                // Обновляем остаток
+                // Обновляем остаток, среднюю себестоимость и последнюю цену закупки
                 await using var upd = new NpgsqlCommand(
-                    "UPDATE product SET stock_quantity = stock_quantity + @q WHERE product_id = @pid", conn, tx);
-                upd.Parameters.AddWithValue("q", item.Quantity);
+                    @"UPDATE product 
+                      SET stock_quantity = @stock,
+                          average_cost = @avg,
+                          last_purchase_price = @lastPrice
+                      WHERE product_id = @pid",
+                    conn, tx);
+                upd.Parameters.AddWithValue("stock", newStock);
+                upd.Parameters.AddWithValue("avg", newAvg);
+                upd.Parameters.AddWithValue("lastPrice", item.UnitPurchasePrice);
                 upd.Parameters.AddWithValue("pid", item.ProductId);
                 await upd.ExecuteNonQueryAsync();
-
-                // Обновляем last_purchase_price
-                await using var updPrice = new NpgsqlCommand(
-                    @"UPDATE product SET last_purchase_price = @newPrice
-                      WHERE product_id = @pid", conn, tx);
-                updPrice.Parameters.AddWithValue("newPrice", item.UnitPurchasePrice);
-                updPrice.Parameters.AddWithValue("pid", item.ProductId);
-                await updPrice.ExecuteNonQueryAsync();
             }
 
             await tx.CommitAsync();

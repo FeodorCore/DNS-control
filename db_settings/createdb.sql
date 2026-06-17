@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS product (
     description       TEXT,
     current_price     DECIMAL(10,2) NOT NULL CHECK (current_price >= 0),
     last_purchase_price DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (last_purchase_price >= 0),
+    average_cost      DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (average_cost >= 0),
     stock_quantity    INT           NOT NULL CHECK (stock_quantity >= 0),
     category_id       INT           NOT NULL REFERENCES category(category_id)
 );

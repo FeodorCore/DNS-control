@@ -65,7 +65,8 @@ public partial class SalesViewModel : ViewModelBase
                 {
                     newItem.ProductName = product.Name;
                     newItem.MaxStock = product.StockQuantity;
-                    newItem.UnitCostPrice = product.LastPurchasePrice; // всегда актуальная себестоимость
+                    // Теперь берём среднюю себестоимость
+                    newItem.UnitCostPrice = product.AverageCost;
                     if (newItem.UnitSalePrice <= 0)
                         newItem.UnitSalePrice = product.CurrentPrice;
                 }
@@ -113,7 +114,6 @@ public partial class SalesViewModel : ViewModelBase
 
             var db = DatabaseService.Instance;
 
-            // Проверка обязательных полей в каждой позиции
             foreach (var item in Items)
             {
                 if (item.ProductId == 0)
@@ -133,7 +133,6 @@ public partial class SalesViewModel : ViewModelBase
                 }
             }
 
-            // Группируем позиции по товару и проверяем суммарный остаток
             var grouped = Items.GroupBy(i => i.ProductId);
             foreach (var group in grouped)
             {
@@ -155,14 +154,13 @@ public partial class SalesViewModel : ViewModelBase
                 ProductId = i.ProductId,
                 Quantity = i.Quantity,
                 UnitSalePrice = i.UnitSalePrice,
-                UnitCostPrice = i.UnitCostPrice
+                UnitCostPrice = i.UnitCostPrice   // будет переопределено в репозитории актуальной средней
             }).ToList();
 
             CurrentSale.TotalAmount = OverallTotal;
             await db.SaveSaleAsync(CurrentSale, itemsToSave);
             await RefreshProductsAsync();
 
-            // Сброс для следующего чека
             Items.Clear();
             CurrentSale = new Sale { SaleDatetime = DateTime.Now };
             OnPropertyChanged(nameof(SaleDatetime));

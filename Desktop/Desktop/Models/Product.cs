@@ -7,6 +7,7 @@ public class Product
     public string? Description { get; set; }
     public decimal CurrentPrice { get; set; }
     public decimal LastPurchasePrice { get; set; }
+    public decimal AverageCost { get; set; }
     public int StockQuantity { get; set; }
     public int CategoryId { get; set; }
     public string? CategoryName { get; set; }

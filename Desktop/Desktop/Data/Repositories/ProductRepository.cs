@@ -17,7 +17,7 @@ public class ProductRepository : BaseRepository
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             @"SELECT p.product_id, p.name, p.description, p.current_price,
-                     p.last_purchase_price, p.stock_quantity, p.category_id,
+                     p.last_purchase_price, p.average_cost, p.stock_quantity, p.category_id,
                      c.name AS category_name
               FROM product p JOIN category c ON p.category_id = c.category_id
               ORDER BY p.name", conn);
@@ -30,9 +30,10 @@ public class ProductRepository : BaseRepository
                 Description = reader.IsDBNull(2) ? null : reader.GetString(2),
                 CurrentPrice = reader.GetDecimal(3),
                 LastPurchasePrice = reader.GetDecimal(4),
-                StockQuantity = reader.GetInt32(5),
-                CategoryId = reader.GetInt32(6),
-                CategoryName = reader.GetString(7)
+                AverageCost = reader.GetDecimal(5),
+                StockQuantity = reader.GetInt32(6),
+                CategoryId = reader.GetInt32(7),
+                CategoryName = reader.GetString(8)
             });
         return list;
     }
@@ -43,14 +44,15 @@ public class ProductRepository : BaseRepository
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             @"INSERT INTO product (name, description, current_price, last_purchase_price,
-                                   stock_quantity, category_id)
-              VALUES (@p1, @p2, @p3, @p4, @p5, @p6) RETURNING product_id", conn);
+                                   average_cost, stock_quantity, category_id)
+              VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7) RETURNING product_id", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", product.CurrentPrice);
         cmd.Parameters.AddWithValue("p4", product.LastPurchasePrice);
-        cmd.Parameters.AddWithValue("p5", product.StockQuantity);
-        cmd.Parameters.AddWithValue("p6", product.CategoryId);
+        cmd.Parameters.AddWithValue("p5", product.AverageCost);
+        cmd.Parameters.AddWithValue("p6", product.StockQuantity);
+        cmd.Parameters.AddWithValue("p7", product.CategoryId);
         product.ProductId = (int)(await cmd.ExecuteScalarAsync())!;
     }
 
@@ -60,15 +62,16 @@ public class ProductRepository : BaseRepository
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             @"UPDATE product SET name=@p1, description=@p2, current_price=@p3,
-                 last_purchase_price=@p4, stock_quantity=@p5, category_id=@p6
-              WHERE product_id=@p7", conn);
+                 last_purchase_price=@p4, average_cost=@p5, stock_quantity=@p6, category_id=@p7
+              WHERE product_id=@p8", conn);
         cmd.Parameters.AddWithValue("p1", product.Name);
         cmd.Parameters.AddWithValue("p2", (object?)product.Description ?? DBNull.Value);
         cmd.Parameters.AddWithValue("p3", product.CurrentPrice);
         cmd.Parameters.AddWithValue("p4", product.LastPurchasePrice);
-        cmd.Parameters.AddWithValue("p5", product.StockQuantity);
-        cmd.Parameters.AddWithValue("p6", product.CategoryId);
-        cmd.Parameters.AddWithValue("p7", product.ProductId);
+        cmd.Parameters.AddWithValue("p5", product.AverageCost);
+        cmd.Parameters.AddWithValue("p6", product.StockQuantity);
+        cmd.Parameters.AddWithValue("p7", product.CategoryId);
+        cmd.Parameters.AddWithValue("p8", product.ProductId);
         await cmd.ExecuteNonQueryAsync();
     }
 
@@ -104,14 +107,14 @@ public class ProductRepository : BaseRepository
         return result is not null and not DBNull ? (decimal)result : 0m;
     }
 
-    public async Task UpdateLastPurchasePriceAsync(int productId, decimal newPrice)
+    public async Task<decimal> GetAverageCostAsync(int productId)
     {
         await using var conn = CreateConnection();
         await conn.OpenAsync();
         await using var cmd = new NpgsqlCommand(
-            "UPDATE product SET last_purchase_price = @p WHERE product_id = @pid", conn);
-        cmd.Parameters.AddWithValue("p", newPrice);
+            "SELECT average_cost FROM product WHERE product_id = @pid", conn);
         cmd.Parameters.AddWithValue("pid", productId);
-        await cmd.ExecuteNonQueryAsync();
+        var result = await cmd.ExecuteScalarAsync();
+        return result is not null and not DBNull ? (decimal)result : 0m;
     }
 }
