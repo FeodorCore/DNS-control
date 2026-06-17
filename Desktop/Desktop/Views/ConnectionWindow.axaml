@@ -4,7 +4,7 @@
         x:Class="Desktop.Views.ConnectionWindow"
         x:DataType="vm:ConnectionViewModel"
         Title="DNS Учёт — Подключение к базе данных"
-        Width="460" Height="560"
+        Width="460" Height="600"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         Background="#FDF8F4">
