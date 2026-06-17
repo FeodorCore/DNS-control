@@ -20,25 +20,26 @@ public class SaleRepository : BaseRepository
             if (sale.SaleId == 0)
             {
                 await using var cmd = new NpgsqlCommand(
-                    "INSERT INTO sale (sale_datetime, total_amount) VALUES (@p1, @p2) RETURNING sale_id", conn, tx);
-                cmd.Parameters.AddWithValue("p1", sale.SaleDatetime);
-                cmd.Parameters.AddWithValue("p2", sale.TotalAmount);
-
+                    "INSERT INTO sale (customer_id, sale_datetime, total_amount) VALUES (@p1, @p2, @p3) RETURNING sale_id", conn, tx);
+                cmd.Parameters.AddWithValue("p1", (object?)sale.CustomerId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p2", sale.SaleDatetime);
+                cmd.Parameters.AddWithValue("p3", sale.TotalAmount);
+                
                 var result = await cmd.ExecuteScalarAsync();
                 if (result == null || result == DBNull.Value)
                     throw new Exception("Не удалось получить ID продажи после вставки.");
-
                 sale.SaleId = Convert.ToInt32(result);
             }
             else
             {
                 await using var cmd = new NpgsqlCommand(
-                    "UPDATE sale SET sale_datetime = @p1, total_amount = @p2 WHERE sale_id = @p3", conn, tx);
-                cmd.Parameters.AddWithValue("p1", sale.SaleDatetime);
-                cmd.Parameters.AddWithValue("p2", sale.TotalAmount);
-                cmd.Parameters.AddWithValue("p3", sale.SaleId);
+                    "UPDATE sale SET customer_id = @p1, sale_datetime = @p2, total_amount = @p3 WHERE sale_id = @p4", conn, tx);
+                cmd.Parameters.AddWithValue("p1", (object?)sale.CustomerId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("p2", sale.SaleDatetime);
+                cmd.Parameters.AddWithValue("p3", sale.TotalAmount);
+                cmd.Parameters.AddWithValue("p4", sale.SaleId);
                 await cmd.ExecuteNonQueryAsync();
-
+                
                 await using var delCmd = new NpgsqlCommand(
                     "DELETE FROM sale_item WHERE sale_id = @p1", conn, tx);
                 delCmd.Parameters.AddWithValue("p1", sale.SaleId);
@@ -56,7 +57,7 @@ public class SaleRepository : BaseRepository
                 costCmd.Parameters.AddWithValue("pid", item.ProductId);
                 var costResult = await costCmd.ExecuteScalarAsync();
                 decimal actualCost = costResult is not null and not DBNull ? (decimal)costResult : 0m;
-                
+
                 // Переопределяем себестоимость для точности
                 item.UnitCostPrice = actualCost;
 

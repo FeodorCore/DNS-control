@@ -12,8 +12,9 @@ namespace Desktop.ViewModels;
 public partial class SalesViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Product> _products = new();
-    private Sale? _currentSale;
+    [ObservableProperty] private ObservableCollection<Customer> _customers = new();
     
+    private Sale? _currentSale;
     public Sale? CurrentSale
     {
         get => _currentSale;
@@ -21,6 +22,7 @@ public partial class SalesViewModel : ViewModelBase
         {
             SetProperty(ref _currentSale, value);
             OnPropertyChanged(nameof(SaleDatetime));
+            OnPropertyChanged(nameof(CustomerId));
         }
     }
 
@@ -36,10 +38,23 @@ public partial class SalesViewModel : ViewModelBase
             }
         }
     }
+    
+    public int? CustomerId
+    {
+        get => CurrentSale?.CustomerId;
+        set
+        {
+            if (CurrentSale != null)
+            {
+                CurrentSale.CustomerId = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     [ObservableProperty] private ObservableCollection<SaleItemViewModel> _items = new();
     public decimal OverallTotal => Items.Sum(i => i.Total);
-    
+
     [ObservableProperty] private string? _errorMessage;
     [ObservableProperty] private bool _isProcessing;
 
@@ -49,7 +64,13 @@ public partial class SalesViewModel : ViewModelBase
     {
         var db = DatabaseService.Instance;
         Products = new ObservableCollection<Product>(await db.GetProductsAsync());
-        CurrentSale = new Sale { SaleDatetime = DateTime.Now };
+        
+        // Добавляем "Разовый покупатель" (ID = 0) в начало списка для удобства
+        var customers = await db.GetCustomersAsync();
+        var dummyCustomer = new Customer { CustomerId = 0, Name = "Разовый покупатель (без карты)" };
+        Customers = new ObservableCollection<Customer>(new[] { dummyCustomer }.Concat(customers));
+        
+        CurrentSale = new Sale { SaleDatetime = DateTime.Now, CustomerId = 0 };
     }
 
     [RelayCommand]
@@ -65,7 +86,6 @@ public partial class SalesViewModel : ViewModelBase
                 {
                     newItem.ProductName = product.Name;
                     newItem.MaxStock = product.StockQuantity;
-                    // Теперь берём среднюю себестоимость
                     newItem.UnitCostPrice = product.AverageCost;
                     if (newItem.UnitSalePrice <= 0)
                         newItem.UnitSalePrice = product.CurrentPrice;
@@ -100,7 +120,6 @@ public partial class SalesViewModel : ViewModelBase
     private async Task SaveSaleAsync()
     {
         if (IsProcessing) return;
-
         IsProcessing = true;
         ErrorMessage = null;
 
@@ -113,7 +132,6 @@ public partial class SalesViewModel : ViewModelBase
             }
 
             var db = DatabaseService.Instance;
-
             foreach (var item in Items)
             {
                 if (item.ProductId == 0)
@@ -149,21 +167,27 @@ public partial class SalesViewModel : ViewModelBase
 
             if (CurrentSale is null) return;
 
+            // Если выбран "Разовый покупатель" (CustomerId == 0), то в БД пишем null
+            int? dbCustomerId = (CustomerId == 0) ? null : CustomerId;
+
             var itemsToSave = Items.Select(i => new SaleItem
             {
                 ProductId = i.ProductId,
                 Quantity = i.Quantity,
                 UnitSalePrice = i.UnitSalePrice,
-                UnitCostPrice = i.UnitCostPrice   // будет переопределено в репозитории актуальной средней
+                UnitCostPrice = i.UnitCostPrice
             }).ToList();
 
+            CurrentSale.CustomerId = dbCustomerId;
             CurrentSale.TotalAmount = OverallTotal;
+            
             await db.SaveSaleAsync(CurrentSale, itemsToSave);
             await RefreshProductsAsync();
-
+            
             Items.Clear();
-            CurrentSale = new Sale { SaleDatetime = DateTime.Now };
+            CurrentSale = new Sale { SaleDatetime = DateTime.Now, CustomerId = 0 };
             OnPropertyChanged(nameof(SaleDatetime));
+            OnPropertyChanged(nameof(CustomerId));
             OnPropertyChanged(nameof(OverallTotal));
         }
         catch (Exception ex)

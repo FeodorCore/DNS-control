@@ -11,14 +11,15 @@ namespace Desktop.Data;
 public class DatabaseService
 {
     private static DatabaseService? _instance;
-    private readonly string _connectionString; // <-- сохраняем строку подключения
-
+    private readonly string _connectionString;
+    
     public static DatabaseService Instance =>
         _instance ?? throw new InvalidOperationException(
             "DatabaseService не инициализирован. Вызовите Initialize() после успешного подключения.");
 
     private readonly CategoryRepository _categories;
     private readonly SupplierRepository _suppliers;
+    private readonly CustomerRepository _customers;
     private readonly ProductRepository _products;
     private readonly SupplyRepository _supplies;
     private readonly SaleRepository _sales;
@@ -26,9 +27,10 @@ public class DatabaseService
 
     private DatabaseService(string connectionString)
     {
-        _connectionString = connectionString; // <-- сохраняем
+        _connectionString = connectionString;
         _categories = new CategoryRepository(connectionString);
         _suppliers = new SupplierRepository(connectionString);
+        _customers = new CustomerRepository(connectionString);
         _products = new ProductRepository(connectionString);
         _supplies = new SupplyRepository(connectionString);
         _sales = new SaleRepository(connectionString);
@@ -45,25 +47,43 @@ public class DatabaseService
     {
         try
         {
-            // Используем сохранённую строку подключения из экземпляра
             var cs = _instance!._connectionString;
             await using var conn = new NpgsqlConnection(cs);
             await conn.OpenAsync();
-            // Добавляем столбец average_cost, если его ещё нет
-            await using var cmd = new NpgsqlCommand(
-                "ALTER TABLE product ADD COLUMN IF NOT EXISTS average_cost DECIMAL(10,2) NOT NULL DEFAULT 0",
-                conn);
-            await cmd.ExecuteNonQueryAsync();
 
-            // Инициализируем average_cost у существующих товаров на основе последней цены закупки, если average_cost = 0
-            await using var updateCmd = new NpgsqlCommand(
-                "UPDATE product SET average_cost = last_purchase_price WHERE average_cost = 0 AND last_purchase_price > 0",
-                conn);
-            await updateCmd.ExecuteNonQueryAsync();
+            // Миграция для average_cost
+            await using var cmd1 = new NpgsqlCommand(
+                "ALTER TABLE product ADD COLUMN IF NOT EXISTS average_cost DECIMAL(10,2) NOT NULL DEFAULT 0", conn);
+            await cmd1.ExecuteNonQueryAsync();
+
+            await using var cmd2 = new NpgsqlCommand(
+                "UPDATE product SET average_cost = last_purchase_price WHERE average_cost = 0 AND last_purchase_price > 0", conn);
+            await cmd2.ExecuteNonQueryAsync();
+            
+            // Миграция для таблицы customer
+            await using var cmd3 = new NpgsqlCommand(@"
+                CREATE TABLE IF NOT EXISTS customer (
+                    customer_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                    name        TEXT NOT NULL,
+                    phone       TEXT,
+                    email       TEXT,
+                    discount_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (discount_percent >= 0 AND discount_percent <= 100)
+                );", conn);
+            await cmd3.ExecuteNonQueryAsync();
+
+            // Миграция для customer_id в sale
+            await using var cmd4 = new NpgsqlCommand(
+                "ALTER TABLE sale ADD COLUMN IF NOT EXISTS customer_id INT REFERENCES customer(customer_id)", conn);
+            await cmd4.ExecuteNonQueryAsync();
+            
+            // Индекс для customer_id
+            await using var cmd5 = new NpgsqlCommand(
+                "CREATE INDEX IF NOT EXISTS idx_sale_customer ON sale(customer_id)", conn);
+            await cmd5.ExecuteNonQueryAsync();
         }
         catch
         {
-            // Игнорируем ошибки миграции (например, если БД недоступна)
+            // Игнорируем ошибки миграции
         }
     }
 
@@ -94,6 +114,12 @@ public class DatabaseService
     public Task AddSupplierAsync(Supplier s) => _suppliers.AddAsync(s);
     public Task UpdateSupplierAsync(Supplier s) => _suppliers.UpdateAsync(s);
     public Task DeleteSupplierAsync(int id) => _suppliers.DeleteAsync(id);
+    
+    // Покупатели
+    public Task<List<Customer>> GetCustomersAsync() => _customers.GetAllAsync();
+    public Task AddCustomerAsync(Customer c) => _customers.AddAsync(c);
+    public Task UpdateCustomerAsync(Customer c) => _customers.UpdateAsync(c);
+    public Task DeleteCustomerAsync(int id) => _customers.DeleteAsync(id);
 
     // Товары
     public Task<List<Product>> GetProductsAsync() => _products.GetAllAsync();
@@ -111,12 +137,10 @@ public class DatabaseService
 
     // Отчёты
     public Task<List<StockReportRow>> GetStockReportAsync(string categoryName) => _reports.GetStockReportAsync(categoryName);
-
     public Task<List<SalesByDayReportRow>> GetSalesByDayReportAsync(
-        DateTime dateFrom, DateTime dateTo, string categoryName)
+        DateTime dateFrom, DateTime dateTo, string categoryName) 
         => _reports.GetSalesByDayReportAsync(dateFrom, dateTo, categoryName);
-
     public Task<List<ProfitByProductReportRow>> GetProfitByProductReportAsync(
-        DateTime dateFrom, DateTime dateTo, string categoryName)
+        DateTime dateFrom, DateTime dateTo, string categoryName) 
         => _reports.GetProfitByProductReportAsync(dateFrom, dateTo, categoryName);
 }
