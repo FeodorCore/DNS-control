@@ -18,6 +18,7 @@
                                  BorderThickness="0" Background="Transparent" Padding="4,4" FontSize="14" />
                     </Grid>
                 </Border>
+
                 <ListBox Grid.Row="1" ItemsSource="{Binding Products}"
                          SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -46,6 +47,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="18">
                     <TextBlock Classes="Header" Text="Редактирование товара" />
+
                     <StackPanel Spacing="18"
                                 IsEnabled="{Binding SelectedProduct, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel>
@@ -53,12 +55,14 @@
                             <TextBox Text="{Binding SelectedProduct.Name, Mode=TwoWay}"
                                      PlaceholderText="Введите название" />
                         </StackPanel>
+
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Описание" />
                             <TextBox Text="{Binding SelectedProduct.Description, Mode=TwoWay}"
                                      PlaceholderText="Краткое описание"
                                      AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
                         </StackPanel>
+
                         <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
                             <StackPanel Grid.Column="0">
                                 <TextBlock Classes="Label" Text="Цена продажи" />
@@ -70,10 +74,12 @@
                                 <TextBox Text="{Binding SelectedProduct.StockQuantity, Mode=TwoWay}" IsReadOnly="True" />
                             </StackPanel>
                         </Grid>
+
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Последняя цена закупки" />
                             <TextBox Text="{Binding SelectedProduct.LastPurchasePrice, Mode=OneWay}" IsReadOnly="True" />
                         </StackPanel>
+
                         <StackPanel>
                             <TextBlock Classes="Label" Text="Категория" />
                             <ComboBox ItemsSource="{Binding Categories}"
@@ -83,6 +89,16 @@
                                       PlaceholderText="Выберите категорию" />
                         </StackPanel>
                     </StackPanel>
+
+                    <!-- Блок уведомления об ошибке (появится, если ErrorMessage не null) -->
+                    <Border Background="#FEF3F2" CornerRadius="8" Padding="16" Margin="0,8,0,0"
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" FontWeight="500"
+                                       TextWrapping="Wrap" FontSize="14" />
+                        </StackPanel>
+                    </Border>
 
                     <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,0">
                         <Button Content="Добавить" Command="{Binding AddCommand}" Classes="Primary" />
