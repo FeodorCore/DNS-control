@@ -46,9 +46,18 @@ entity "supply_item" {
   unit_purchase_price : DECIMAL
 }
 
+entity "customer" {
+  *customer_id : INT <<PK>>
+  --
+  name : TEXT
+  phone : TEXT
+  email : TEXT
+}
+
 entity "sale" {
   *sale_id : INT <<PK>>
   --
+  customer_id : INT <<FK>>
   sale_datetime : TIMESTAMP
   total_amount : DECIMAL
 }
@@ -63,12 +72,12 @@ entity "sale_item" {
   unit_cost_price : DECIMAL
 }
 
-' Relationships
-category ||--o{ product : "содержит"
-supplier ||--o{ supply : "выполняет"
-supply ||--o{ supply_item : "включает"
-product ||--o{ supply_item : "поставляется в"
-sale ||--o{ sale_item : "включает"
-product ||--o{ sale_item : "продается в"
+category ||--o{ product
+supplier ||--o{ supply
+supply ||--o{ supply_item
+product ||--o{ supply_item
+customer ||--o{ sale
+sale ||--o{ sale_item
+product ||--o{ sale_item
 
 @enduml
