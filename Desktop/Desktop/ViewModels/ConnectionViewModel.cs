@@ -36,7 +36,6 @@ public partial class ConnectionViewModel : ViewModelBase
     {
         if (!int.TryParse(Port, out var port))
             port = 5432;
-
         return $"Host={Host};Port={port};Database={Database};Username={Username};Password={Password}";
     }
 
@@ -115,13 +114,16 @@ public partial class ConnectionViewModel : ViewModelBase
                 return;
             }
 
+            // АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ТАБЛИЦ, если их нет
+            await DatabaseService.InitializeSchemaAsync(cs);
+
             // Инициализируем DatabaseService
             DatabaseService.Initialize(cs);
 
             // Сохраняем настройки
             if (!int.TryParse(Port, out var port))
                 port = 5432;
-
+            
             SettingsService.Save(new ConnectionSettings
             {
                 Host = Host,
@@ -136,7 +138,7 @@ public partial class ConnectionViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Ошибка: {ex.Message}";
+            ErrorMessage = $"Ошибка инициализации БД: {ex.Message}";
         }
         finally
         {
