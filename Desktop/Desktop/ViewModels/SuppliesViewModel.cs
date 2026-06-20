@@ -67,12 +67,13 @@ public partial class SuppliesViewModel : ViewModelBase
         Products = new ObservableCollection<Product>(await db.GetProductsAsync());
         CurrentSupply = new Supply { SupplyDate = DateTime.Today };
     }
-
+    
     [RelayCommand]
     private async Task AddItemAsync()
     {
         var newItem = new SupplyItemViewModel();
-        newItem.PropertyChanged += async (s, e) =>
+       
+        newItem.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(SupplyItemViewModel.ProductId) && newItem.ProductId > 0)
             {
@@ -80,8 +81,7 @@ public partial class SuppliesViewModel : ViewModelBase
                 if (product != null)
                 {
                     newItem.ProductName = product.Name;
-                    if (newItem.UnitPurchasePrice == 0)
-                        newItem.UnitPurchasePrice = product.LastPurchasePrice;
+                    newItem.UnitPurchasePrice = product.LastPurchasePrice;
                 }
             }
             OnPropertyChanged(nameof(OverallTotal));

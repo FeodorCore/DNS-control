@@ -87,8 +87,7 @@ public partial class SalesViewModel : ViewModelBase
                     newItem.ProductName = product.Name;
                     newItem.MaxStock = product.StockQuantity;
                     newItem.UnitCostPrice = product.AverageCost;
-                    if (newItem.UnitSalePrice <= 0)
-                        newItem.UnitSalePrice = product.CurrentPrice;
+                    newItem.UnitSalePrice = product.CurrentPrice;
                 }
             }
             OnPropertyChanged(nameof(OverallTotal));
